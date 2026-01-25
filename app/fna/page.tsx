@@ -3,7 +3,6 @@
 export const dynamic = "force-dynamic";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabaseClient";
 
 /**
@@ -20,13 +19,6 @@ import { getSupabase } from "@/lib/supabaseClient";
  * - Supabase auth is required; if no session, user is redirected to /auth.
  * - One “active” FNA per client is represented by the most recently updated fna_header for that client.
  */
-
-const AUTH_COOKIE = "canfs_auth";
-
-function hasAuthCookie() {
-  if (typeof document === "undefined") return false;
-  return document.cookie.split("; ").some((c) => c.startsWith(`${AUTH_COOKIE}=true`));
-}
 
 type UUID = string;
 
@@ -555,7 +547,6 @@ function EditableTable({
 }
 
 export default function Page() {
-  const router = useRouter();
   const supabaseRef = useRef<ReturnType<typeof getSupabase> | null>(null);
   if (!supabaseRef.current) supabaseRef.current = getSupabase();
   const supabase = supabaseRef.current;
@@ -592,28 +583,32 @@ export default function Page() {
   useEffect(() => {
     (async () => {
       try {
-        // Navigation-only fix: accept cookie auth (set on /auth) OR a Supabase session.
-        if (!hasAuthCookie()) {
-          const { data } = await supabase.auth.getSession();
-          if (!data.session) {
-            router.replace('/auth?next=/fna');
-            return;
-          }
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          window.location.href = "/auth";
+          return;
         }
       } catch {
-        // ignore
+        // ignore; page will show error on subsequent calls
       } finally {
         setAuthChecked(true);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
+  }, []);
 
   async function logout() {
     try {
       await supabase.auth.signOut();
+    } catch {
+      // ignore
     } finally {
+      // Important: clear the simple cookie auth too, otherwise /auth may auto-redirect to /dashboard
+      clearAuthCookie();
       router.replace("/auth");
+    }
+  } finally {
+      window.location.href = "/auth";
     }
   }
 
