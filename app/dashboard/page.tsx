@@ -348,8 +348,8 @@ export default function Dashboard() {
       await supabase.auth.signOut(); 
     } finally {
       clearAuthCookie();
-      router.replace(\"/auth\");
-    }
+      router.replace("/auth");
+    } 
   } 
   async function ut() { 
     try { 
@@ -357,8 +357,8 @@ export default function Dashboard() {
       await supabase.auth.signOut(); 
     } finally {
       clearAuthCookie();
-      router.replace(\"/auth\");
-    }
+      router.replace("/auth");
+    } 
   } 
   async function fetchTrends() { 
     setTrendLoading(true); 
