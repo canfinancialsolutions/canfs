@@ -26,7 +26,7 @@ function setAuthCookie() {
 // ✅ FIX: Financial Need Analysis should navigate to Dashboard, not /fna.
 const DESTINATIONS = [
   { value: 'dashboard', label: 'Dashboard', path: '/dashboard' },
-  { value: 'fna', label: 'Financial Need Analysis', path: '/dashboard' }, // <-- FIXED
+  { value: 'fna', label: 'Financial Need Analysis', path: '/fna' }, // <-- FIXED
   { value: 'prospect', label: 'Prospect List', path: '/prospect' },
 ];
 
