@@ -1075,7 +1075,7 @@ export default function Page() {
            <div>
               <div className="text-lg font-bold text-slate-900">1. Choose Client 👨🏻‍💼</div>
               <div className="text-sm font-normal text-slate-600 mt-1">Select a client and complete all six sections of the FNA</div>
-            </div>
+            
           
           right={
             <div className="text-xs text-slate-500">
@@ -1086,7 +1086,7 @@ export default function Page() {
                     </div>
                     )}
              </div>
-          }
+          } </div>
         >
             <div className="space-y-3">
             <input
