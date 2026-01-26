@@ -21,6 +21,22 @@ import { useRouter } from "next/navigation";
  * - One â€œactiveâ€ FNA per client is represented by the most recently updated fna_header for that client.
  */
 
+
+// Auth cookie utilities
+const AUTH_COOKIE = 'canfs_auth';
+
+function hasAuthCookie(): boolean {
+  if (typeof document === 'undefined') return false;
+  return document.cookie.split('; ').some((c) => c.startsWith(`${AUTH_COOKIE}=true`));
+}
+
+function clearAuthCookie(): void {
+  if (typeof document === 'undefined') return;
+  const secure =
+    typeof window !== 'undefined' && window.location?.protocol === 'https:' ? '; secure' : '';
+  document.cookie = `${AUTH_COOKIE}=; path=/; max-age=0; samesite=lax${secure}`;
+}
+
 type UUID = string;
 
 type ClientRow = {
@@ -587,10 +603,15 @@ function EditableTable({
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await supabase().auth.getSession();
-        if (!data.session) {
-          router.replace("/auth");
-          return;
+        // Check cookie first (fast)
+        const cookieOk = hasAuthCookie();
+        if (!cookieOk) {
+          // Fallback to Supabase session check
+          const { data } = await supabase().auth.getSession();
+          if (!data.session) {
+            router.replace("/auth");
+            return;
+          }
         }
       } catch {
         // ignore; page will show error on subsequent calls
@@ -605,6 +626,7 @@ function EditableTable({
     try {
       await supabase().auth.signOut();
     } finally {
+      clearAuthCookie();
       router.replace("/auth");
     }
   }
