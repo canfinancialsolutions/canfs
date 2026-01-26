@@ -195,10 +195,7 @@ const yesNoNormalize = (v?: string | null) => {
 };
 
 const normText = (s: string) =>
-  s
-    .trim()
-    .toLowerCase()
-    .replace(/[â€â€‘â€’â€“â€”â€•âˆ’]/g, '-');
+  s.trim().toLowerCase().replace(/[\u2010-\u2015\u2212]/g, "-");
 
 const toNull = (s: string | null | undefined) => {
   const v = (s ?? '').trim();
@@ -982,7 +979,7 @@ export default function ProspectListPage() {
               onClick={handleTopAction}
               title={!canTopAction && !(showCard && mode === 'edit') ? 'Select a row to edit' : undefined}
             >
-              {saving && showCard && mode === 'edit' ? 'Savingâ€¦' : topActionLabel}
+              {saving && showCard && mode === 'edit' ? 'Saving...¦' : topActionLabel}
             </button>
 
             <button
@@ -1033,7 +1030,7 @@ export default function ProspectListPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={21} className="px-3 py-6 text-center text-slate-500">
-                      Loadingâ€¦
+                      Loading...¦
                     </td>
                   </tr>
                 ) : pageRows.length === 0 ? (
@@ -1121,7 +1118,7 @@ export default function ProspectListPage() {
                   onClick={handleBottomAction}
                   disabled={!canBottomAction}
                 >
-                  {saving && showCard ? 'Savingâ€¦' : bottomPrimaryLabel}
+                  {saving && showCard ? 'Saving...¦' : bottomPrimaryLabel}
                 </button>
 
                 {showCard && mode === 'new' && (
@@ -1151,7 +1148,7 @@ export default function ProspectListPage() {
                 <h2 className="text-lg font-bold text-slate-900">{mode === 'edit' ? 'Selected Prospect' : 'New Prospect'}</h2>
                 <p className="text-sm text-slate-600">
                   {mode === 'edit' && selected
-                    ? `Editing #${selected.id} â€” ${selected.first_name}${selected.last_name ? ' ' + selected.last_name : ''}`
+                    ? `Editing #${selected.id} ...” ${selected.first_name}${selected.last_name ? ' ' + selected.last_name : ''}`
                     : 'Enter details below, then use the button under the table to save.'}
                 </p>
               </div>
