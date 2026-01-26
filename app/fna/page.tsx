@@ -1036,7 +1036,6 @@ export default function Page() {
     if (taxRefundRow) setTaxRefundRow((r) => (r ? { ...r, fna_id: fnaId } : r));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fnaId]);
-
   // ---------- UI ----------
   return (
     <div className="min-h-screen bg-slate-50">
@@ -1074,9 +1073,9 @@ export default function Page() {
         {/* 1. Choose Client */}
         <Card
           title="1. Choose Client 👨🏻‍💼"
-          <div className="text-sm text-slate-600">Select a client and complete all six sections of the FNA</div>
           right={
             <div className="text-xs text-slate-500">
+              <div className="text-sm text-slate-600">Select a client and complete all six sections of the FNA</div>
                      {selectedClient && (
                     <div className="mt-2 text-sm text-slate-700">
                       <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
@@ -1086,7 +1085,7 @@ export default function Page() {
              </div>
           }
         >
-          <div className="space-y-3">
+            <div className="space-y-3">
             <input
               className="w-full max-w-[420px] rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-slate-400"
               placeholder="Search by name or phone..."
