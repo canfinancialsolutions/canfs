@@ -1045,7 +1045,7 @@ function EditableTable({
         <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-3xl font-extrabold text-slate-900">{pageTitle}</div>
+              <div className="text-3xl font-bold text-slate-900">{pageTitle}</div>
               <div className="text-slate-600 mt-1">Select a client and complete all six sections of the FNA.</div>
               {selectedClient && (
                 <div className="mt-2 text-sm text-slate-700">
