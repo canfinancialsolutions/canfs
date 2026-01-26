@@ -48,7 +48,7 @@ type Prospect = {
   updated_at?: string | null;
 };
 
-type Form = {
+type ProspectForm = {
   first_name: string;
   last_name: string;
   spouse_name: string;
@@ -692,9 +692,9 @@ export default function ProspectPage() {
             <div className="flex items-center gap-3">
               <img src="/can-logo.png" alt="CAN Financial Solutions" className="h-10 w-auto" />
               <div>
-                <div className="text-2xl font-bold text-blue-800">Prospect List Tracking</div>
-                 <div className="text-sm font-semibold text-yellow-500">Protecting Your Tomorrow</div>
-               </div>
+                <div className="text-1x2 font-bold text-blue-800">Prospect List Tracking</div>
+                <div className="text-slate-600 mt-1">Based on CAN Financial Solutions Prospect List</div>
+              </div>
             </div>
             <button
               type="button"
@@ -704,7 +704,7 @@ export default function ProspectPage() {
               Logout ➜]
             </button>
           </div>
-          
+
           {/* Toasts */}
           {errorMsg && (
             <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
