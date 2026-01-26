@@ -961,7 +961,7 @@ function EditableTable({
   const headerGoalsFields: FieldDef[] = useMemo(
     () => [
       { key: "goals_text", label: "Goals", type: "textarea", widthClass: "md:col-span-2 lg:col-span-3" },
-      { key: "own_or_rent", label: "Own or Rent", type: "select", options: ["", "Own", "Rent"] },
+      { key: "own_or_rent", label: "Own or Rent", type: "select", options: ["Own", "Rent"] },
       { key: "properties_notes", label: "Properties Notes", type: "textarea", widthClass: "md:col-span-2 lg:col-span-3" },
     ],
     []
@@ -1073,7 +1073,7 @@ function EditableTable({
 
         {/* 1. Choose Client */}
         <Card
-          title="1. Choose Client"
+          title="1. Choose Client 👨🏻‍💼"
           right={
             <div className="text-xs text-slate-500">
               {clientLoading ? "Searching¦" : `${clientRows.length} result(s)`}
