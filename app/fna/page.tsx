@@ -1072,8 +1072,8 @@ export default function Page() {
 
         {/* 1. Choose Client */}
         <Card
-          title="1. Choose Client 👨🏻‍💼 
-                   <br> Select a client and complete all six sections of the FNA </br>"
+          title="1. Choose Client 👨🏻‍💼" 
+          <br> Select a client and complete all six sections of the FNA </br> 
           
           right={
             <div className="text-xs text-slate-500">
