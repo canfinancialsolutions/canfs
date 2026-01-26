@@ -701,7 +701,7 @@ export default function ProspectPage() {
               className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-colors border bg-slate-900 hover:bg-slate-800 text-white border-slate-900"
               onClick={logout}
             >
-              ← Logout
+              ➜]Logout
             </button>
           </div>
           
