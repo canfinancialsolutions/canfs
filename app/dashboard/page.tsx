@@ -562,14 +562,7 @@ export default function Dashboard() {
       setSavingId(null); 
     } 
   } 
-  
-# Complete app/dashboard/page.tsx - Fixed Version
 
-The file was truncated at line 549. Here's the fix - **add this code after line 548** (after the `updateCell` function closes):
-
-## Missing Code Section (add after updateCell function)
-
-```typescript
   const totalPages = Math.max(1, Math.ceil((total ?? 0) / ALL_PAGE_SIZE)); 
   const canPrev = page > 0; 
   const canNext = (page + 1) * ALL_PAGE_SIZE < total; 
@@ -835,17 +828,6 @@ The file was truncated at line 549. Here's the fix - **add this code after line 
     </div> 
   ); 
 }
- 
-
-## Helper Components (add after the main component)
-
-# Complete app/dashboard/page.tsx - Fixed Version
-
-The file was truncated at line 549. Here's the fix - **add this code after line 548** (after the `updateCell` function closes):
-
-## Missing Code Section (add after updateCell function)
-
-```typescript
   const totalPages = Math.max(1, Math.ceil((total ?? 0) / ALL_PAGE_SIZE)); 
   const canPrev = page > 0; 
   const canNext = (page + 1) * ALL_PAGE_SIZE < total; 
@@ -888,7 +870,6 @@ The file was truncated at line 549. Here's the fix - **add this code after line 
   }; 
   
   const hideZeroFormatter = (val: any) => { const n = Number(val); return Number.isFinite(n) && n === 0 ? "" : val; }; 
-
   if (!authChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -1111,11 +1092,8 @@ The file was truncated at line 549. Here's the fix - **add this code after line 
     </div> 
   ); 
 }
-```
 
 ## Helper Components (add after the main component)
-
-```typescript
 function ProgressSummaryTable({ rows, sortState, onSortChange }: { rows: Row[]; sortState: { key: ProgressSortKey; dir: SortDir }; onSortChange: (k: ProgressSortKey) => void; }) { 
   const { widths, startResize } = useColumnResizer(); 
   const cols = useMemo(() => [ 
