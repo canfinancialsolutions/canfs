@@ -5,7 +5,7 @@
  * CAN Financial Solutions – Dashboard
  * With fixed authentication and logout behavior
  */
-
+import { logout, hasAuthCookie } from "@/lib/auth";
 import React, { useEffect, useMemo, useRef, useState } from "react"; 
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx"; 
@@ -236,7 +236,26 @@ function useColumnResizer() {
   }; 
   return { widths, setWidths, startResize }; 
 } 
-
+useEffect(() => {
+  (async () => {
+    try {
+      const cookieOk = hasAuthCookie();
+      if (!cookieOk) {
+        const supabase = getSupabase();
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          router.replace("/auth?next=/dashboard");
+          return;
+        }
+      }
+      await Promise.all([fetchTrends(), fetchProgressSummary(), loadPage(0)]);
+    } catch (e: any) {
+      setError(e?.message ?? "Failed to initialize");
+    } finally {
+      setLoading(false);
+    }
+  })();
+}, [router]);
 const US_STATE_OPTIONS: string[] = [ 
   "", 
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", 
