@@ -296,6 +296,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true); 
   const [savingId, setSavingId] = useState<string | null>(null); 
   const [sortAll, setSortAll] = useState<{ key: SortKey; dir: SortDir }>({ key: "created_at", dir: "desc" }); 
+  const [recordsVisible, setRecordsVisible] = useState(false);  
+
   const [trendsVisible, setTrendsVisible] = useState(false);
   const [upcomingVisible, setUpcomingVisible] = useState(false);
   const [progressVisible, setProgressVisible] = useState(false);
@@ -330,6 +332,7 @@ export default function Dashboard() {
   useEffect(() => { 
     const id = setTimeout(() => { 
       loadPage(0); 
+     const [recordsVisible, setRecordsVisible] = useState(false);  
       setRecordsVisible(true); 
     }, 300); 
     return () => clearTimeout(id); 
@@ -348,6 +351,14 @@ export default function Dashboard() {
       router.replace("/auth");
     } 
   } 
+  async function ut() { 
+    try { 
+      const supabase = getSupabase(); 
+      await supabase.auth.signOut(); 
+    } finally {
+      clearAuthCookie();
+      router.replace("/auth");
+    } 
   } 
   async function fetchTrends() { 
     setTrendLoading(true); 
