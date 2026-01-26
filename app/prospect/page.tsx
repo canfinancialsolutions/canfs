@@ -678,7 +678,7 @@ export default function ProspectPage() {
   const topActionLabel = showCard && mode === 'edit' ? 'Save' : 'Edit Prospect';
   const canTopAction = showCard && mode === 'edit' ? requiredFilled && dirty && !saving : !!activeId && !saving;
 
-  const bottomPrimaryLabel = !showCard ? 'New Prospect' : 'Save New Prospect';
+  const bottomPrimaryLabel = !showCard ? 'New Prospect 🧑🏻‍🤝‍🧑🏻' : 'Save New Prospect';
   const canBottomAction = !showCard ? !saving : mode === 'new' ? requiredFilled && !saving : false;
 
   const selected = prospects.find((p) => p.id === activeId);
@@ -924,7 +924,7 @@ export default function ProspectPage() {
           <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">{mode === 'edit' ? 'Selected Prospect' : 'New Prospect'}</h2>
+                <h2 className="text-lg font-bold text-slate-900">{mode === 'edit' ? 'Selected Prospect 🧑🏻‍🤝‍🧑🏻' : 'New Prospect'}</h2>
                 <p className="text-sm text-slate-600">
                   {mode === 'edit' && selected
                     ? `Editing #${selected.id} ${selected.first_name}${selected.last_name ? ' ' + selected.last_name : ''}`
