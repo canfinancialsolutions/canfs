@@ -115,12 +115,12 @@ type TabKey =
   | "income_estate";
 
 const TAB_LABELS: Record<TabKey, string> = {
-  client_family: "Client & Family",
-  goals_properties: "Goals & Properties",
-  assets: "Assets",
-  liabilities: "Liabilities",
-  insurance: "Insurance",
-  income_estate: "Income & Estate",
+  client_family: "👨‍👨‍👦‍👦Client & Family",
+  goals_properties: "🎯Goals & 🏚️Properties",
+  assets: "💰Assets",
+  liabilities: "💁Liabilities",
+  insurance: "☂️Insurance",
+  income_estate: "💲Income & 🏘️Estate",
 };
 const US_STATES = [
   "",
