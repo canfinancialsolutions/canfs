@@ -693,7 +693,7 @@ export default function ProspectPage() {
               <img src="/can-logo.png" alt="CAN Financial Solutions" className="h-10 w-auto" />
               <div>
                 <div className="text-1x3 font-bold text-blue-800">Prospect List Tracking</div>
-                <div className="text-1x2 font-bold text-blue-800">Based on CAN Financial Solutions Prospect List</div>
+                <div className="text-sm font-semibold text-yellow-500">Based on CAN Financial Solutions Prospect List</div>
               </div>
             </div>
             <button
