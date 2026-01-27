@@ -1099,7 +1099,6 @@ export default function Page() {
                 placeholder="Search by name or phone..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                <div className="font-normal"> 👇 Select a client and complete all six sections of the FNA</div>
               />
              
               <button
