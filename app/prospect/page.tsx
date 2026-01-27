@@ -22,6 +22,7 @@ function clearAuthCookie(): void {
 import { createClient } from '@supabase/supabase-js';
 
 type Prospect = {
+  id: number;
   first_name: string; // NOT NULL
   last_name: string | null;
   spouse_name: string | null;
@@ -787,6 +788,7 @@ export default function ProspectPage() {
                 <table className="min-w-[1200px] w-full text-sm">
                   <thead className="bg-slate-100 text-slate-700">
                     <tr className="[&>th]:whitespace-nowrap [&>th]:px-3 [&>th]:py-2 [&>th]:text-left [&>th]:font-semibold">
+                      <th>#</th>
                       <th>First Name</th>
                       <th>Last Name</th>
                       <th>Spouse Name</th>
