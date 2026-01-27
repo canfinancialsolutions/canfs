@@ -783,11 +783,11 @@ export default function ProspectPage() {
             </div>
 
             {/* Table */}
-            <div className="rounded-xl border border-slate-200">
+            <div className="rounded-xl border border-slate-300">
               <div className="overflow-x-auto">
-                <table className="min-w-[1200px] w-full text-sm">
+                <table className="min-w-[1200px] w-full text-sm" style={{ borderCollapse: 'collapse' }}>
                   <thead className="bg-slate-100 text-slate-700">
-                    <tr className="[&>th]:whitespace-nowrap [&>th]:px-3 [&>th]:py-2 [&>th]:text-left [&>th]:font-semibold">
+                    <tr className="[&>th]:whitespace-nowrap [&>th]:px-3 [&>th]:py-2 [&>th]:text-left [&>th]:font-semibold [&>th]:border [&>th]:border-slate-300">
                       <th>#</th>
                       <th>First Name</th>
                       <th>Last Name</th>
@@ -814,13 +814,13 @@ export default function ProspectPage() {
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan={21} className="px-3 py-6 text-center text-slate-500">
+                        <td colSpan={21} className="px-3 py-6 text-center text-slate-500 border border-slate-300">
                           Loading...
                         </td>
                       </tr>
                     ) : pageRows.length === 0 ? (
                       <tr>
-                        <td colSpan={21} className="px-3 py-6 text-center text-slate-500">
+                        <td colSpan={21} className="px-3 py-6 text-center text-slate-500 border border-slate-300">
                           No prospects found.
                         </td>
                       </tr>
@@ -831,9 +831,9 @@ export default function ProspectPage() {
                           <tr
                             key={p.id}
                             onClick={() => handleSelectRow(p)}
-                            className={`cursor-pointer border-t ${
+                            className={`cursor-pointer ${
                               isActive ? 'bg-emerald-50' : 'hover:bg-slate-50'
-                            } [&>td]:px-3 [&>td]:py-2 [&>td]:text-xs [&>td]:text-slate-700`}
+                            } [&>td]:px-3 [&>td]:py-2 [&>td]:text-xs [&>td]:text-slate-700 [&>td]:border [&>td]:border-slate-300`}
                           >
                             <td className="font-mono text-slate-500">{p.id}</td>
                             <td className="font-semibold text-slate-900">{p.first_name}</td>
