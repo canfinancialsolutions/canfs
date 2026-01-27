@@ -22,6 +22,7 @@ function clearAuthCookie(): void {
 import { createClient } from '@supabase/supabase-js';
 
 type Prospect = {
+  id: number;
   first_name: string; // NOT NULL
   last_name: string | null;
   spouse_name: string | null;
@@ -830,6 +831,7 @@ export default function ProspectPage() {
                             key={p.id}
                             onClick={() => handleSelectRow(p)}
                             className={`cursor-pointer ${
+                              isActive ? 'bg-blue-50' : 'hover:bg-slate-50'
                               isActive ? 'bg-emerald-50' : 'hover:bg-slate-50'
                             } [&>td]:px-3 [&>td]:py-2 [&>td]:text-xs [&>td]:text-slate-700 [&>td]:border [&>td]:border-slate-300`}
                           >
@@ -925,7 +927,7 @@ export default function ProspectPage() {
                 <h2 className="text-lg font-bold text-slate-900">{mode === 'edit' ? 'Selected Prospect🧑🏻‍🤝‍🧑🏻' : 'New Prospect🧑🏻‍🤝‍🧑🏻'}</h2>
                 <p className="text-sm text-slate-600">
                   {mode === 'edit' && selected
-                    ? `Editing #${selected.id} ${selected.first_name}${selected.last_name ? ' ' + selected.last_name : ''}`
+                    ? `Editing ${selected.first_name}${selected.last_name ? ' ' + selected.last_name : ''}`
                     : 'Enter details below, then use the button under the table to save.'}
                 </p>
               </div>
