@@ -1081,11 +1081,11 @@ export default function Page() {
           title={
             <div>
               <div className="text-lg font-bold text-slate-900">1. Choose Client 👨🏻‍💼</div>
-              <div className="font-normal">Select a client and complete all six sections of the FNA</div>
+              <div className="font-normal"> 👇 Select a client and complete all six sections of the FNA</div>
               {selectedClient && (
                 <div className="mt-2 text-sm text-slate-700">
-                  <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
-                  <span className="text-slate-500">({selectedClient.email})</span>
+                  <span className="font-semibold">👉Selected:</span> {selectedClientLabel}{" "}
+                  <span className="text-slate-500">(✉️{selectedClient.email})</span>
                 </div>
               )}
             </div>
