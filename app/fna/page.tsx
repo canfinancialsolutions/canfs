@@ -1049,13 +1049,7 @@ export default function Page() {
               <div>
                 <div className="text-1x2 font-bold text-blue-800">{pageTitle}</div>
                 <div className="text-sm font-semibold text-yellow-500">Protecting Your Tomorrow</div>
-                {selectedClient && (
-                  <div className="mt-2 text-sm text-slate-700">
-                    <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
-                    <span className="text-slate-500">({selectedClient.email})</span>
-                  </div>
-                )}
-              </div>
+               </div>
             </div>
             <button
               type="button"
