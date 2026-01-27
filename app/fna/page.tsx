@@ -1048,12 +1048,6 @@ export default function Page() {
               <div>
                 <div className="text-1x2 font-bold text-blue-800">{pageTitle}</div>
                 <div className="text-sm font-semibold text-yellow-500">Protecting Your Tomorrow</div>
-                {selectedClient && (
-                  <div className="mt-2 text-sm text-slate-700">
-                    <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
-                    <span className="text-slate-500">({selectedClient.email})</span>
-                  </div>
-                )}
               </div>
             </div>
             <button
@@ -1079,7 +1073,7 @@ export default function Page() {
         <Card
           title={
             <div>
-              <div className="text-lg font-bold text-slate-900">1. Choose Client 👨🏻‍💼</div>
+              <div className="text-lg font-bold text-slate-900">1. Choose Client 👨🏻‍💼 (Select a client and complete all six sections of the FNA)</div>
               {selectedClient && (
                 <div className="mt-2 text-sm text-slate-700">
                   <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
@@ -1090,7 +1084,6 @@ export default function Page() {
           }
           right={
             <div className="text-xs text-slate-600">
-              <div>Select a client and complete all six sections of the FNA</div>
               <div className="text-slate-500 mt-1">
                 {clientLoading ? "Searching¦" : `${clientRows.length} result(s)`}
               </div>
