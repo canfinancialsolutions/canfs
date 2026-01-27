@@ -4,22 +4,38 @@ export const dynamic = "force-dynamic";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-  import { getSupabase } from "@/lib/supabaseClient";
+import { getSupabase } from "@/lib/supabaseClient";
 
 /**
- * Financial Needs Analysis (FNA) — page.tsx
+ * Financial Needs Analysis (FNA) ” page.tsx
  *
  * Fixes included:
  * 1) Client search now queries public.client_registrations (via supabase().from("client_registrations"))
  *    using first_name / last_name / phone (ILIKE) and displays First, Last, Phone, Email.
- * 2) Selecting a client loads/creates an fna_header row, then fetches each tab’s data from the
+ * 2) Selecting a client loads/creates an fna_header row, then fetches each tables data from the
  *    appropriate fna_* tables using fna_id.
  * 3) Minimal, practical CRUD for each fna_* table (add/edit/delete + save).
  *
  * Assumptions:
  * - Supabase auth is required; if no session, user is redirected to /auth.
- * - One “active” FNA per client is represented by the most recently updated fna_header for that client.
+ * - One œactive FNA per client is represented by the most recently updated fna_header for that client.
  */
+
+
+// Auth cookie utilities
+const AUTH_COOKIE = 'canfs_auth';
+
+function hasAuthCookie(): boolean {
+  if (typeof document === 'undefined') return false;
+  return document.cookie.split('; ').some((c) => c.startsWith(`${AUTH_COOKIE}=true`));
+}
+
+function clearAuthCookie(): void {
+  if (typeof document === 'undefined') return;
+  const secure =
+    typeof window !== 'undefined' && window.location?.protocol === 'https:' ? '; secure' : '';
+  document.cookie = `${AUTH_COOKIE}=; path=/; max-age=0; samesite=lax${secure}`;
+}
 
 type UUID = string;
 
@@ -99,12 +115,12 @@ type TabKey =
   | "income_estate";
 
 const TAB_LABELS: Record<TabKey, string> = {
-  client_family: "Client & Family",
-  goals_properties: "Goals & Properties",
-  assets: "Assets",
-  liabilities: "Liabilities",
-  insurance: "Insurance",
-  income_estate: "Income & Estate",
+  client_family: "👨‍👨‍👦‍👦Client & Family",
+  goals_properties: "🎯Goals & 🏚️Properties",
+  assets: "💰Assets",
+  liabilities: "💁Liabilities",
+  insurance: "☂️Insurance",
+  income_estate: "💲Income & 🏘️Estate",
 };
 const US_STATES = [
   "",
@@ -258,7 +274,7 @@ function Card({
   children,
   right,
 }: {
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
   right?: React.ReactNode;
 }) {
@@ -272,7 +288,6 @@ function Card({
     </div>
   );
 }
-
 function FormGrid({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{children}</div>;
 }
@@ -311,7 +326,7 @@ function Field({
         <select className={common} value={value ?? ""} onChange={(e) => onChange(e.target.value)}>
           {(def.options ?? [""]).map((o) => (
             <option key={o} value={o}>
-              {o || "—"}
+              {o || "”"}
             </option>
           ))}
         </select>
@@ -469,7 +484,7 @@ function EditableTable({
                         >
                           {(c.options ?? [""]).map((o) => (
                             <option key={o} value={o}>
-                              {o || "—"}
+                              {o || "”"}
                             </option>
                           ))}
                         </select>
@@ -518,7 +533,7 @@ function EditableTable({
                           }
                         }}
                       >
-                        {saving[r.id] ? "Saving…" : "Save"}
+                        {saving[r.id] ? "Saving¦" : "Save"}
                       </TopButton>
                       <TopButton
                         variant="danger"
@@ -532,7 +547,7 @@ function EditableTable({
                           }
                         }}
                       >
-                        {deleting[r.id] ? "Deleting…" : "Delete"}
+                        {deleting[r.id] ? "Deleting¦" : "Delete"}
                       </TopButton>
                     </div>
                   </td>
@@ -546,14 +561,15 @@ function EditableTable({
   );
 }
 
- export default function Page() {
+export default function Page() {
   const router = useRouter();
+  // Lazily initialize Supabase client on the client runtime only
   const supabaseRef = useRef<ReturnType<typeof getSupabase> | null>(null);
-  // Lazily create Supabase client on first use (avoids build/prerender issues)
   const supabase = () => {
     if (!supabaseRef.current) supabaseRef.current = getSupabase();
     return supabaseRef.current!;
   };
+
   const [authChecked, setAuthChecked] = useState(false);
 
   // Client search
@@ -586,10 +602,15 @@ function EditableTable({
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await supabase().auth.getSession();
-        if (!data.session) {
-          window.location.href = "/auth";
-          return;
+        // Check cookie first (fast)
+        const cookieOk = hasAuthCookie();
+        if (!cookieOk) {
+          // Fallback to Supabase session check
+          const { data } = await supabase().auth.getSession();
+          if (!data.session) {
+            router.replace("/auth");
+            return;
+          }
         }
       } catch {
         // ignore; page will show error on subsequent calls
@@ -604,7 +625,8 @@ function EditableTable({
     try {
       await supabase().auth.signOut();
     } finally {
-      window.location.href = "/auth";
+      clearAuthCookie();
+      router.replace("/auth");
     }
   }
 
@@ -939,7 +961,7 @@ function EditableTable({
   const headerGoalsFields: FieldDef[] = useMemo(
     () => [
       { key: "goals_text", label: "Goals", type: "textarea", widthClass: "md:col-span-2 lg:col-span-3" },
-      { key: "own_or_rent", label: "Own or Rent", type: "select", options: ["", "Own", "Rent"] },
+      { key: "own_or_rent", label: "Own or Rent", type: "select", options: ["Own", "Rent"] },
       { key: "properties_notes", label: "Properties Notes", type: "textarea", widthClass: "md:col-span-2 lg:col-span-3" },
     ],
     []
@@ -984,7 +1006,7 @@ function EditableTable({
 
   // ---------- Render helpers ----------
   const pageTitle = "Financial Needs Analysis";
-
+ 
   const canUseTabs = !!selectedClient && !!fnaHeader && !!fnaId;
 
   const selectedClientLabel = selectedClient
@@ -1022,20 +1044,20 @@ function EditableTable({
         {/* Header */}
         <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-3xl font-extrabold text-slate-900">{pageTitle}</div>
-              <div className="text-slate-600 mt-1">Select a client and complete all six sections of the FNA.</div>
-              {selectedClient && (
-                <div className="mt-2 text-sm text-slate-700">
-                  <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
-                  <span className="text-slate-500">({selectedClient?.email})</span>
-                </div>
-              )}
-            </div> 
-            <TopButton  onClick={logout}>
-              ← Logout
-            </TopButton>
-            
+            <div className="flex items-center gap-3">
+              <img src="/can-logo.png" alt="CAN Financial Solutions" className="h-10 w-auto" />
+              <div>
+                <div className="text-xl font-bold text-blue-800">{pageTitle}</div>
+                <div className="text-sm font-semibold text-yellow-500">Protecting Your Tomorrow</div>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-colors border border-slate-300 bg-transparent text-slate-700"
+              onClick={logout}
+            >
+              Logout ➜]
+            </button>
           </div>
           {error && (
             <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -1048,13 +1070,19 @@ function EditableTable({
             </div>
           )}
         </div>
-
         {/* 1. Choose Client */}
         <Card
-          title="1. Choose Client"
+          title={
+            <div>
+              <div className="text-lg font-bold text-slate-900">1. Choose Client 👨🏻‍💼</div>
+              <div className="text-sm font-normal text-slate-600 mt-1">Select a client and complete all six sections of the FNA</div>
+            </div>
+          }
           right={
             <div className="text-xs text-slate-500">
-              {clientLoading ? "Searching…" : `${clientRows.length} result(s)`}
+                <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
+                <span className="text-slate-500">({selectedClient.email})</span>
+              {clientLoading ? "Searching¦" : `${clientRows.length} result(s)`}
             </div>
           }
         >
@@ -1065,7 +1093,6 @@ function EditableTable({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-
             <div className="overflow-auto border border-slate-200 rounded-xl">
               <table className="w-full text-sm border-collapse min-w-[760px]">
                 <thead className="bg-slate-50">
@@ -1080,7 +1107,7 @@ function EditableTable({
                   {clientLoading ? (
                     <tr>
                       <td colSpan={4} className="px-4 py-6 text-slate-600">
-                        Loading…
+                        Loading¦
                       </td>
                     </tr>
                   ) : clientRows.length === 0 ? (
@@ -1113,7 +1140,7 @@ function EditableTable({
             </div>
 
             {loadingFna && (
-              <div className="text-sm text-slate-600">Loading client FNA…</div>
+              <div className="text-sm text-slate-600">Loading client FNA¦</div>
             )}
           </div>
         </Card>
@@ -1154,7 +1181,7 @@ function EditableTable({
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-base font-bold text-slate-900">Client & Family</div>
                       <TopButton variant="primary" onClick={() => saveHeader()} disabled={savingHeader}>
-                        {savingHeader ? "Saving…" : "Save"}
+                        {savingHeader ? "Saving¦" : "Save"}
                       </TopButton>
                     </div>
 
@@ -1210,7 +1237,7 @@ function EditableTable({
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-base font-bold text-slate-900">Goals & Properties</div>
                       <TopButton variant="primary" onClick={() => saveHeader()} disabled={savingHeader}>
-                        {savingHeader ? "Saving…" : "Save"}
+                        {savingHeader ? "Saving¦" : "Save"}
                       </TopButton>
                     </div>
 
@@ -1266,7 +1293,7 @@ function EditableTable({
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-base font-bold text-slate-900">Assets</div>
                       <TopButton variant="primary" onClick={() => saveHeader()} disabled={savingHeader}>
-                        {savingHeader ? "Saving…" : "Save"}
+                        {savingHeader ? "Saving¦" : "Save"}
                       </TopButton>
                     </div>
 
@@ -1364,7 +1391,7 @@ function EditableTable({
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-base font-bold text-slate-900">Insurance</div>
                       <TopButton variant="primary" onClick={() => saveHeader()} disabled={savingHeader}>
-                        {savingHeader ? "Saving…" : "Save"}
+                        {savingHeader ? "Saving¦" : "Save"}
                       </TopButton>
                     </div>
 
@@ -1423,7 +1450,7 @@ function EditableTable({
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-base font-bold text-slate-900">Income & Estate</div>
                       <TopButton variant="primary" onClick={() => saveHeader()} disabled={savingHeader}>
-                        {savingHeader ? "Saving…" : "Save"}
+                        {savingHeader ? "Saving¦" : "Save"}
                       </TopButton>
                     </div>
 
@@ -1529,7 +1556,7 @@ function EditableTable({
 
         {/* Developer hint */}
         <div className="text-xs text-slate-500">
-          Note: If you still see “No clients found” but you know data exists, verify Supabase RLS policies for
+          Note: If you still see No clients found but you know data exists, verify Supabase RLS policies for
           <span className="font-semibold"> client_registrations</span> and the <span className="font-semibold">fna_* tables</span>.
           This page uses direct <span className="font-mono">supabase().from("...")</span> reads/writes.
         </div>
