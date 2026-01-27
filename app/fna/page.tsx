@@ -1083,12 +1083,20 @@ const selectedEmail = selectedEmail
           title={
             <div>
               <div className="text-lg font-bold text-slate-900">1. Choose Client 👨🏻‍💼</div>
-              <div className="text-sm font-normal text-slate-600 mt-1">Select a client and complete all six sections of the FNA</div>
+              {selectedClient && (
+                <div className="mt-2 text-sm text-slate-700">
+                  <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
+                  <span className="text-slate-500">({selectedClient.email})</span>
+                </div>
+              )}
             </div>
           }
           right={
-            <div className="text-xs text-slate-500">
-              {clientLoading ? "Searching¦" : `${clientRows.length} result(s)`}
+            <div className="text-xs text-slate-600">
+              <div>Select a client and complete all six sections of the FNA</div>
+              <div className="text-slate-500 mt-1">
+                {clientLoading ? "Searching¦" : `${clientRows.length} result(s)`}
+              </div>
             </div>
           }
         >
@@ -1099,26 +1107,26 @@ const selectedEmail = selectedEmail
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <div className="overflow-auto border border-slate-200 rounded-xl">
-              <table className="w-full text-sm border-collapse min-w-[760px]">
+            <div className="overflow-auto rounded-lg border border-slate-300">
+              <table className="w-full text-sm min-w-[760px]" style={{ borderCollapse: 'collapse' }}>
                 <thead className="bg-slate-50">
                   <tr className="text-left text-xs font-semibold text-slate-700">
-                    <th className="px-4 py-3 border-b border-slate-200">First</th>
-                    <th className="px-4 py-3 border-b border-slate-200">Last</th>
-                    <th className="px-4 py-3 border-b border-slate-200">Phone</th>
-                    <th className="px-4 py-3 border-b border-slate-200">Email</th>
+                    <th className="px-4 py-3 border border-slate-300">First</th>
+                    <th className="px-4 py-3 border border-slate-300">Last</th>
+                    <th className="px-4 py-3 border border-slate-300">Phone</th>
+                    <th className="px-4 py-3 border border-slate-300">Email</th>
                   </tr>
                 </thead>
                 <tbody>
                   {clientLoading ? (
                     <tr>
-                      <td colSpan={4} className="px-4 py-6 text-slate-600">
+                      <td colSpan={4} className="px-4 py-6 text-slate-600 border border-slate-300">
                         Loading¦
                       </td>
                     </tr>
                   ) : clientRows.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-4 py-6 text-slate-500 text-center">
+                      <td colSpan={4} className="px-4 py-6 text-slate-500 text-center border border-slate-300">
                         No clients found.
                       </td>
                     </tr>
@@ -1128,15 +1136,15 @@ const selectedEmail = selectedEmail
                       return (
                         <tr
                           key={c.id}
-                          className={`cursor-pointer ${isSelected ? "bg-slate-100" : "hover:bg-slate-50"}`}
+                          className={`cursor-pointer ${isSelected ? "bg-blue-50" : "hover:bg-slate-50"}`}
                           onClick={() => loadFnaForClient(c)}
                         >
-                          <td className="px-4 py-3 border-b border-slate-100 font-semibold text-slate-900">
+                          <td className="px-4 py-3 border border-slate-300 font-semibold text-slate-900">
                             {c.first_name}
                           </td>
-                          <td className="px-4 py-3 border-b border-slate-100 text-slate-900">{c.last_name}</td>
-                          <td className="px-4 py-3 border-b border-slate-100 text-slate-700">{c.phone}</td>
-                          <td className="px-4 py-3 border-b border-slate-100 text-slate-700">{c.email}</td>
+                          <td className="px-4 py-3 border border-slate-300 text-slate-900">{c.last_name}</td>
+                          <td className="px-4 py-3 border border-slate-300 text-slate-700">{c.phone}</td>
+                          <td className="px-4 py-3 border border-slate-300 text-slate-700">{c.email}</td>
                         </tr>
                       );
                     })
