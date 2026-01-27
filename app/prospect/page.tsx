@@ -832,7 +832,7 @@ export default function ProspectPage() {
                             key={p.id}
                             onClick={() => handleSelectRow(p)}
                             className={`cursor-pointer ${
-                              isActive ? 'bg-blue-50' : 'hover:bg-slate-50'
+                              isActive ? 'bg-emerald-50' : 'hover:bg-slate-50'
                             } [&>td]:px-3 [&>td]:py-2 [&>td]:text-xs [&>td]:text-slate-700 [&>td]:border [&>td]:border-slate-300`}
                           >
                             <td className="font-mono text-slate-500">{p.id}</td>
