@@ -274,7 +274,7 @@ function Card({
   children,
   right,
 }: {
-  title: React.ReactNode;
+   React.ReactNode;
   children: React.ReactNode;
   right?: React.ReactNode;
 }) {
@@ -402,7 +402,7 @@ function EditableTable({
   onDeleteRow,
   addLabel = "Add Row",
 }: {
-  title: string;
+  title: React.ReactNode;
   rows: RowBase[];
   setRows: React.Dispatch<React.SetStateAction<RowBase[]>>;
   columns: FieldDef[];
