@@ -1079,6 +1079,8 @@ export default function Page() {
           }
           right={
             <div className="text-xs text-slate-500">
+              <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
+               <span className="text-slate-500">({selectedClient.email})</span>
               {clientLoading ? "Searching¦" : `${clientRows.length} result(s)`}
             </div>
           }
