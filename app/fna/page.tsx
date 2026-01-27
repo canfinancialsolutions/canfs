@@ -1012,7 +1012,9 @@ export default function Page() {
   const selectedClientLabel = selectedClient
     ? `${selectedClient.first_name ?? ""} ${selectedClient.last_name ?? ""}`.trim()
     : "";
-
+const selectedClientEmail = selectedClientEmail
+    ? `${selectedClient.email ?? ""}`.trim()
+    : "";
   const handleTabClick = (k: TabKey) => {
     if (!canUseTabs) return;
     setActiveTab(k);
@@ -1079,8 +1081,8 @@ export default function Page() {
           }
           right={
             <div className="text-xs text-slate-500">
-                <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
-                <span className="text-slate-500">({selectedClient.email})</span>
+               <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
+              <span className="font-semibold">Selected:</span> {selectedClientEmail}{" "} 
               {clientLoading ? "Searching¦" : `${clientRows.length} result(s)`}
             </div>
           }
