@@ -22,7 +22,6 @@ function clearAuthCookie(): void {
 import { createClient } from '@supabase/supabase-js';
 
 type Prospect = {
-  id: number;
   first_name: string; // NOT NULL
   last_name: string | null;
   spouse_name: string | null;
