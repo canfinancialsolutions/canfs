@@ -1071,26 +1071,25 @@ export default function Page() {
         </div>
         {/* 1. Choose Client */}
         <Card
-            title={
-              <div>
-                <div className="text-lg font-bold text-slate-900">1. Choose Client 👨🏻‍💼</div>
-                <div className="text-sm font-normal text-slate-600 mt-1">Select a client and complete all six sections of the FNA</div>
-              </div>
-            }
-            right={
-              <div className="text-xs text-slate-500">
-                {clientLoading ? "Searching¦" : `${clientRows.length} result(s)`}
-              </div>
-            }
-          >
-            <div className="space-y-3">
+          title={
+            <div>
+              <div className="text-lg font-bold text-slate-900">1. Choose Client 👨🏻‍💼</div>
+              <div className="text-sm font-normal text-slate-600 mt-1">Select a client and complete all six sections of the FNA</div>
+            </div>
+          }
+          right={
+            <div className="text-xs text-slate-500">
+              {clientLoading ? "Searching¦" : `${clientRows.length} result(s)`}
+            </div>
+          }
+        >
+          <div className="space-y-3">
             <input
               className="w-full max-w-[420px] rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-slate-400"
               placeholder="Search by name or phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-
             <div className="overflow-auto border border-slate-200 rounded-xl">
               <table className="w-full text-sm border-collapse min-w-[760px]">
                 <thead className="bg-slate-50">
