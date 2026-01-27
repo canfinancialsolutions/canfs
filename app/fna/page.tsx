@@ -402,7 +402,7 @@ function EditableTable({
   onDeleteRow,
   addLabel = "Add Row",
 }: {
- title: React.ReactNode;
+  title: string;
   rows: RowBase[];
   setRows: React.Dispatch<React.SetStateAction<RowBase[]>>;
   columns: FieldDef[];
@@ -1038,7 +1038,7 @@ export default function Page() {
   }, [fnaId]);
 
   // ---------- UI ----------
- return (
+  return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-[1400px] mx-auto p-6 space-y-6">
         {/* Header */}
@@ -1072,21 +1072,13 @@ export default function Page() {
         </div>
         {/* 1. Choose Client */}
         <Card
-          title = 
-                  {
-                    <div>
-                      <div className="text-lg font-bold text-slate-900">1. Choose Client 👨🏻‍💼</div>
-                      <div className="text-sm font-normal text-slate-600 mt-1">Select a client and complete all six sections of the FNA</div>
-                    </div>
-                  }
+          title={
+            <div>
+              <div className="text-lg font-bold text-slate-900">1. Choose Client 👨🏻‍💼</div>
+              <div className="text-sm font-normal text-slate-600 mt-1">Select a client and complete all six sections of the FNA</div>
+            </div>
+          }
           right={
-                    {selectedClient && (
-                          <div className="mt-2 text-sm text-slate-700">
-                            <span className="font-semibold">Selected:</span> {selectedClientLabel}{" "}
-                            <span className="text-slate-500">({selectedClient.email})</span>
-                          </div>
-                                      )
-                      }
             <div className="text-xs text-slate-500">
               {clientLoading ? "Searching¦" : `${clientRows.length} result(s)`}
             </div>
@@ -1099,7 +1091,6 @@ export default function Page() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-
             <div className="overflow-auto border border-slate-200 rounded-xl">
               <table className="w-full text-sm border-collapse min-w-[760px]">
                 <thead className="bg-slate-50">
