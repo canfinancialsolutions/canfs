@@ -827,7 +827,7 @@ export default function ProspectPage() {
         <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <img src="/CAN_TTN.png" alt="CAN Care & Advancement Network" className="h-10 w-auto" />
+              <img src="/can-logo.png" alt="CAN Care & Advancement Network" className="h-10 w-auto" />
               <div>
                 <div className="text-1x3 font-bold text-blue-800">Prospect List Tracking</div>
                  <div className="text-sm font-semibold text-yellow-500">Caring today, advancing tomorrow</div>
