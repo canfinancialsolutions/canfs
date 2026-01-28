@@ -191,10 +191,10 @@ const US_STATES = [
 
 const ASSET_TAX_TYPES = ["TAX_ADVANTAGED", "TAXABLE", "TAX_DEFERRED"];
 const LIABILITY_TYPES = ["CREDIT_CARD", "AUTO_LOAN", "STUDENT_LOAN", "PERSONAL_LOAN", "OTHER"];
-const INSURED_ROLES = ["", "SPOUSE"];
+const INSURED_ROLES = ["", ""];
 const INSURANCE_TYPES = ["LIFE", "HEALTH"];
 
-const INCOME_ROLES = ["", "SPOUSE"];
+const INCOME_ROLES = ["", ""];
 const INCOME_TYPES = [
   "ANNUAL_SALARY",
   "BONUS_COMMISSIONS",
@@ -1222,7 +1222,7 @@ export default function Page() {
                       onClick={() => handleClientSort('first_name')}
                     >
                       <div className="flex items-center justify-between">
-                        <span>First</span>
+                        <span>First Name</span>
                         <ClientSortIndicator columnKey="first_name" />
                       </div>
                       <div
@@ -1237,7 +1237,7 @@ export default function Page() {
                       onClick={() => handleClientSort('last_name')}
                     >
                       <div className="flex items-center justify-between">
-                        <span>Last</span>
+                        <span>Last Name</span>
                         <ClientSortIndicator columnKey="last_name" />
                       </div>
                       <div
