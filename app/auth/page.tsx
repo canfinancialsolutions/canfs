@@ -43,18 +43,21 @@ export default function LoginPage() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
         <div className="flex flex-col items-center mb-6">
-          <img 
-            src={logo} 
-            alt="CAN Care & Advancement Network" 
-            className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full" 
-            style={{ maxHeight: '96px' }}
-          />
+           <img 
+              src={logo} 
+              alt="CAN Care & Advancement Network" 
+              className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full" 
+              style={{ maxHeight: '96px' }}
+            />
+         <div className="text-center mb-6">
           <h2 className="text-xl font-bold text-blue-800 mb-1">CAN Care & Advancement Network</h2>
           <p className="text-sm font-semibold text-yellow-500 mb-3">Caring today, advancing tomorrow</p>
           <h1 className="text-2xl font-bold text-slate-900">Admin Login</h1>
-           </div>
-              </div>
-                 </div>
+        </div>
+       </div>
+         </div>
+       </div>
+    
         {error && (
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
             {error}
