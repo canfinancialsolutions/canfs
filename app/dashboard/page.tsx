@@ -3,7 +3,7 @@
 "use client";
 
 /** 
- * CAN Care & Advancement Network — Dashboard (page_0 (2).tsx) 
+ * CAN Care & Advancement Network — Dashboard 
  * 
  * Minimal, scoped UI-layer changes only: 
  * - Added/kept new columns: spouse_name, date_of_birth, children, city, state, immigration_status, work_details. 
@@ -1045,11 +1045,11 @@ export default function DashboardPage() {
             <div className="p-4">
               <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
                 <h2 className="text-xl font-semibold text-slate-700">Upcoming Meetings</h2> 
-                <div className="flex items-center gap-2 flex-wrap"> 
+                <div className="flex items-center gap-2 flex-wrap text-sm"> 
                   <input type="date" className="border border-slate-300 rounded px-2 py-1 text-sm" value={startDateRaw} onChange={(e) => setStartDateRaw(e.target.value)} /> 
                   <span className="text-sm text-slate-600">to</span> 
                   <input type="date" className="border border-slate-300 rounded px-2 py-1 text-sm" value={endDateRaw} onChange={(e) => setEndDateRaw(e.target.value)} /> 
-                  <Button variant="secondary" onClick={handleShowResults} className="text-sm"> 
+                  <Button variant="secondary" onClick={handleShowResults}> 
                     {showResultsActive ? ( 
                       <span className="flex items-center gap-1"> 
                         <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span> 
@@ -1059,16 +1059,14 @@ export default function DashboardPage() {
                       "Show Results" 
                     )} 
                   </Button> 
-                  <Button variant="secondary" onClick={handleRefreshUpcoming} className="text-sm">Refresh</Button> 
-                  <Button variant="secondary" onClick={handleExportUpcoming} className="text-sm">Export</Button> 
+                  <Button variant="secondary" onClick={handleRefreshUpcoming}>Refresh</Button> 
+                  <Button variant="secondary" onClick={handleExportUpcoming}>Export</Button> 
                 </div> 
               </div> 
-              {/* NEW: Save button for upcoming meetings */}
-              <div className="mb-4">
+              <div className="mb-4 text-sm">
                 <Button 
                   onClick={handleSaveChanges} 
                   disabled={!upcomingModified}
-                  className="text-sm"
                 >
                   Save Changes
                 </Button>
@@ -1095,9 +1093,9 @@ export default function DashboardPage() {
             <div className="p-4">
               <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
                 <h2 className="text-xl font-semibold text-slate-700">Progress Monitoring</h2> 
-                <div className="flex items-center gap-2"> 
-                  <Button variant="secondary" onClick={() => fetchProgressMonitoring()} className="text-sm">Refresh</Button> 
-                  <Button variant="secondary" onClick={handleExportProgress} className="text-sm">Export</Button> 
+                <div className="flex items-center gap-2 text-sm"> 
+                  <Button variant="secondary" onClick={() => fetchProgressMonitoring()}>Refresh</Button> 
+                  <Button variant="secondary" onClick={handleExportProgress}>Export</Button> 
                 </div> 
               </div> 
               <ResizableTable 
@@ -1123,17 +1121,15 @@ export default function DashboardPage() {
             <div className="p-4">
               <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
                 <h2 className="text-xl font-semibold text-slate-700">All Records</h2> 
-                <div className="flex items-center gap-2"> 
-                  <Button variant="secondary" onClick={() => { setAllDrafts({}); setAllModified(false); fetchAllRecords(); }} className="text-sm">Refresh</Button> 
-                  <Button variant="secondary" onClick={handleExportAll} className="text-sm">Export</Button> 
+                <div className="flex items-center gap-2 text-sm"> 
+                  <Button variant="secondary" onClick={() => { setAllDrafts({}); setAllModified(false); fetchAllRecords(); }}>Refresh</Button> 
+                  <Button variant="secondary" onClick={handleExportAll}>Export</Button> 
                 </div> 
               </div> 
-              {/* NEW: Save button for all records */}
-              <div className="mb-4">
+              <div className="mb-4 text-sm">
                 <Button 
                   onClick={handleSaveChanges} 
                   disabled={!allModified}
-                  className="text-sm"
                 >
                   Save Changes
                 </Button>
