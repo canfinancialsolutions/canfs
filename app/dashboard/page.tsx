@@ -902,10 +902,10 @@ export default function DashboardPage() {
   if (error) { 
     return ( 
       <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100"> 
-        <Card className="max-w-md p-6 text-center"> 
+        <div className="max-w-md p-6 text-center bg-white rounded-lg shadow-lg">
           <p className="mb-4 text-red-600 font-semibold">{error}</p> 
           <Button onClick={() => loadData()}>Retry</Button> 
-        </Card> 
+        </div>
       </div> 
     ); 
   } 
@@ -964,63 +964,75 @@ export default function DashboardPage() {
           <Button variant="secondary" onClick={handleLogout}>Logout</Button> 
         </div> 
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4"> 
-          <Card className="flex flex-col items-center justify-center p-4"> 
-            <p className="text-sm text-slate-600 mb-1">New Clients</p> 
-            <p className="text-3xl font-bold text-blue-600">{newClients}</p> 
+          <Card title="New Clients">
+            <div className="flex flex-col items-center justify-center p-4"> 
+              <p className="text-sm text-slate-600 mb-1">New Clients</p> 
+              <p className="text-3xl font-bold text-blue-600">{newClients}</p> 
+            </div>
           </Card> 
-          <Card className="flex flex-col items-center justify-center p-4"> 
-            <p className="text-sm text-slate-600 mb-1">BOP Calls Today</p> 
-            <p className="text-3xl font-bold text-green-600">{bopToday}</p> 
+          <Card title="BOP Calls Today">
+            <div className="flex flex-col items-center justify-center p-4"> 
+              <p className="text-sm text-slate-600 mb-1">BOP Calls Today</p> 
+              <p className="text-3xl font-bold text-green-600">{bopToday}</p> 
+            </div>
           </Card> 
-          <Card className="flex flex-col items-center justify-center p-4"> 
-            <p className="text-sm text-slate-600 mb-1">Follow-Up Calls Today</p> 
-            <p className="text-3xl font-bold text-purple-600">{followupToday}</p> 
+          <Card title="Follow-Up Calls Today">
+            <div className="flex flex-col items-center justify-center p-4"> 
+              <p className="text-sm text-slate-600 mb-1">Follow-Up Calls Today</p> 
+              <p className="text-3xl font-bold text-purple-600">{followupToday}</p> 
+            </div>
           </Card> 
-          <Card className="flex flex-col items-center justify-center p-4"> 
-            <p className="text-sm text-slate-600 mb-1">Completed Today</p> 
-            <p className="text-3xl font-bold text-orange-600">{completedToday}</p> 
+          <Card title="Completed Today">
+            <div className="flex flex-col items-center justify-center p-4"> 
+              <p className="text-sm text-slate-600 mb-1">Completed Today</p> 
+              <p className="text-3xl font-bold text-orange-600">{completedToday}</p> 
+            </div>
           </Card> 
         </div> 
         <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2"> 
-          <Card className="p-4"> 
-            <h2 className="mb-4 text-lg font-semibold text-slate-700">BOP, Follow-Up & Completion (Last 7 Days)</h2> 
-            {chartData.length > 0 ? ( 
-              <ResponsiveContainer width="100%" height={240}> 
-                <BarChart data={chartData}> 
-                  <XAxis dataKey="date" tick={{ fontSize: 12 }} /> 
-                  <YAxis tick={{ fontSize: 12 }} /> 
-                  <Tooltip /> 
-                  <Bar dataKey="BOP Calls" fill="#3b82f6" radius={[4, 4, 0, 0]}> 
-                    <LabelList dataKey="BOP Calls" position="top" style={{ fontSize: 10 }} /> 
-                  </Bar> 
-                  <Bar dataKey="Follow-Up Calls" fill="#a855f7" radius={[4, 4, 0, 0]}> 
-                    <LabelList dataKey="Follow-Up Calls" position="top" style={{ fontSize: 10 }} /> 
-                  </Bar> 
-                  <Bar dataKey="Completed" fill="#f97316" radius={[4, 4, 0, 0]}> 
-                    <LabelList dataKey="Completed" position="top" style={{ fontSize: 10 }} /> 
-                  </Bar> 
-                </BarChart> 
-              </ResponsiveContainer> 
-            ) : ( 
-              <p className="text-sm text-slate-500">No chart data available.</p> 
-            )} 
+          <Card title="BOP, Follow-Up & Completion"> 
+            <div className="p-4">
+              <h2 className="mb-4 text-lg font-semibold text-slate-700">BOP, Follow-Up & Completion (Last 7 Days)</h2> 
+              {chartData.length > 0 ? ( 
+                <ResponsiveContainer width="100%" height={240}> 
+                  <BarChart data={chartData}> 
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} /> 
+                    <YAxis tick={{ fontSize: 12 }} /> 
+                    <Tooltip /> 
+                    <Bar dataKey="BOP Calls" fill="#3b82f6" radius={[4, 4, 0, 0]}> 
+                      <LabelList dataKey="BOP Calls" position="top" style={{ fontSize: 10 }} /> 
+                    </Bar> 
+                    <Bar dataKey="Follow-Up Calls" fill="#a855f7" radius={[4, 4, 0, 0]}> 
+                      <LabelList dataKey="Follow-Up Calls" position="top" style={{ fontSize: 10 }} /> 
+                    </Bar> 
+                    <Bar dataKey="Completed" fill="#f97316" radius={[4, 4, 0, 0]}> 
+                      <LabelList dataKey="Completed" position="top" style={{ fontSize: 10 }} /> 
+                    </Bar> 
+                  </BarChart> 
+                </ResponsiveContainer> 
+              ) : ( 
+                <p className="text-sm text-slate-500">No chart data available.</p> 
+              )}
+            </div> 
           </Card> 
-          <Card className="p-4"> 
-            <h2 className="mb-4 text-lg font-semibold text-slate-700">Call Status Distribution</h2> 
-            {callData.length > 0 ? ( 
-              <ResponsiveContainer width="100%" height={240}> 
-                <BarChart data={callData} layout="vertical"> 
-                  <XAxis type="number" tick={{ fontSize: 12 }} /> 
-                  <YAxis dataKey="status" type="category" tick={{ fontSize: 12 }} width={100} /> 
-                  <Tooltip /> 
-                  <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]}> 
-                    <LabelList dataKey="count" position="right" style={{ fontSize: 10 }} /> 
-                  </Bar> 
-                </BarChart> 
-              </ResponsiveContainer> 
-            ) : ( 
-              <p className="text-sm text-slate-500">No call status data available.</p> 
-            )} 
+          <Card title="Call Status Distribution"> 
+            <div className="p-4">
+              <h2 className="mb-4 text-lg font-semibold text-slate-700">Call Status Distribution</h2> 
+              {callData.length > 0 ? ( 
+                <ResponsiveContainer width="100%" height={240}> 
+                  <BarChart data={callData} layout="vertical"> 
+                    <XAxis type="number" tick={{ fontSize: 12 }} /> 
+                    <YAxis dataKey="status" type="category" tick={{ fontSize: 12 }} width={100} /> 
+                    <Tooltip /> 
+                    <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]}> 
+                      <LabelList dataKey="count" position="right" style={{ fontSize: 10 }} /> 
+                    </Bar> 
+                  </BarChart> 
+                </ResponsiveContainer> 
+              ) : ( 
+                <p className="text-sm text-slate-500">No call status data available.</p> 
+              )}
+            </div> 
           </Card> 
         </div> 
         <div className="mb-4 flex items-center gap-4"> 
@@ -1029,119 +1041,125 @@ export default function DashboardPage() {
           <button onClick={() => setActiveView("all")} className={`px-4 py-2 rounded font-semibold transition-colors ${activeView === "all" ? "bg-blue-600 text-white" : "bg-white text-slate-700 hover:bg-blue-50"}`}>All Records</button> 
         </div> 
         {activeView === "upcoming" && ( 
-          <Card className="p-4"> 
-            <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
-              <h2 className="text-xl font-semibold text-slate-700">Upcoming Meetings</h2> 
-              <div className="flex items-center gap-2 flex-wrap"> 
-                <input type="date" className="border border-slate-300 rounded px-2 py-1 text-sm" value={startDateRaw} onChange={(e) => setStartDateRaw(e.target.value)} /> 
-                <span className="text-sm text-slate-600">to</span> 
-                <input type="date" className="border border-slate-300 rounded px-2 py-1 text-sm" value={endDateRaw} onChange={(e) => setEndDateRaw(e.target.value)} /> 
-                <Button variant="secondary" onClick={handleShowResults} className="text-sm"> 
-                  {showResultsActive ? ( 
-                    <span className="flex items-center gap-1"> 
-                      <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span> 
-                      Show Results 
-                    </span> 
-                  ) : ( 
-                    "Show Results" 
-                  )} 
-                </Button> 
-                <Button variant="secondary" onClick={handleRefreshUpcoming} className="text-sm">Refresh</Button> 
-                <Button variant="secondary" onClick={handleExportUpcoming} className="text-sm">Export</Button> 
+          <Card title="Upcoming Meetings"> 
+            <div className="p-4">
+              <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
+                <h2 className="text-xl font-semibold text-slate-700">Upcoming Meetings</h2> 
+                <div className="flex items-center gap-2 flex-wrap"> 
+                  <input type="date" className="border border-slate-300 rounded px-2 py-1 text-sm" value={startDateRaw} onChange={(e) => setStartDateRaw(e.target.value)} /> 
+                  <span className="text-sm text-slate-600">to</span> 
+                  <input type="date" className="border border-slate-300 rounded px-2 py-1 text-sm" value={endDateRaw} onChange={(e) => setEndDateRaw(e.target.value)} /> 
+                  <Button variant="secondary" onClick={handleShowResults} className="text-sm"> 
+                    {showResultsActive ? ( 
+                      <span className="flex items-center gap-1"> 
+                        <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span> 
+                        Show Results 
+                      </span> 
+                    ) : ( 
+                      "Show Results" 
+                    )} 
+                  </Button> 
+                  <Button variant="secondary" onClick={handleRefreshUpcoming} className="text-sm">Refresh</Button> 
+                  <Button variant="secondary" onClick={handleExportUpcoming} className="text-sm">Export</Button> 
+                </div> 
               </div> 
+              {/* NEW: Save button for upcoming meetings */}
+              <div className="mb-4">
+                <Button 
+                  onClick={handleSaveChanges} 
+                  disabled={!upcomingModified}
+                  className="text-sm"
+                >
+                  Save Changes
+                </Button>
+              </div>
+              <ResizableTable 
+                rows={sortedUpcoming} 
+                columns={upcomingCols} 
+                stickyLeftCount={3} 
+                drafts={upcomingDrafts} 
+                setDrafts={setUpcomingDrafts} 
+                savingId={upcomingSavingId} 
+                onUpdate={handleUpdateRow} 
+                onSort={handleUpcomingSort} 
+                sortKey={upcomingSortKey} 
+                sortDir={upcomingSortDir} 
+                openCell={upcomingOpenCell} 
+                setOpenCell={setUpcomingOpenCell} 
+              />
             </div> 
-            {/* NEW: Save button for upcoming meetings */}
-            <div className="mb-4">
-              <Button 
-                onClick={handleSaveChanges} 
-                disabled={!upcomingModified}
-                className="text-sm"
-              >
-                Save Changes
-              </Button>
-            </div>
-            <ResizableTable 
-              rows={sortedUpcoming} 
-              columns={upcomingCols} 
-              stickyLeftCount={3} 
-              drafts={upcomingDrafts} 
-              setDrafts={setUpcomingDrafts} 
-              savingId={upcomingSavingId} 
-              onUpdate={handleUpdateRow} 
-              onSort={handleUpcomingSort} 
-              sortKey={upcomingSortKey} 
-              sortDir={upcomingSortDir} 
-              openCell={upcomingOpenCell} 
-              setOpenCell={setUpcomingOpenCell} 
-            /> 
           </Card> 
         )} 
         {activeView === "progress" && ( 
-          <Card className="p-4"> 
-            <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
-              <h2 className="text-xl font-semibold text-slate-700">Progress Monitoring</h2> 
-              <div className="flex items-center gap-2"> 
-                <Button variant="secondary" onClick={() => fetchProgressMonitoring()} className="text-sm">Refresh</Button> 
-                <Button variant="secondary" onClick={handleExportProgress} className="text-sm">Export</Button> 
+          <Card title="Progress Monitoring"> 
+            <div className="p-4">
+              <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
+                <h2 className="text-xl font-semibold text-slate-700">Progress Monitoring</h2> 
+                <div className="flex items-center gap-2"> 
+                  <Button variant="secondary" onClick={() => fetchProgressMonitoring()} className="text-sm">Refresh</Button> 
+                  <Button variant="secondary" onClick={handleExportProgress} className="text-sm">Export</Button> 
+                </div> 
               </div> 
+              <ResizableTable 
+                rows={sortedProgress} 
+                columns={progressCols} 
+                stickyLeftCount={1} 
+                onSort={handleProgressSort} 
+                sortKey={progressSortKey} 
+                sortDir={progressSortDir} 
+              /> 
+              {progressPageCount > 1 && ( 
+                <div className="mt-4 flex items-center justify-center gap-2"> 
+                  <Button variant="secondary" onClick={() => setProgressPage((p) => Math.max(1, p - 1))} disabled={progressPage === 1}>Prev</Button> 
+                  <span className="text-sm text-slate-600">Page {progressPage} of {progressPageCount}</span> 
+                  <Button variant="secondary" onClick={() => setProgressPage((p) => Math.min(progressPageCount, p + 1))} disabled={progressPage === progressPageCount}>Next</Button> 
+                </div> 
+              )}
             </div> 
-            <ResizableTable 
-              rows={sortedProgress} 
-              columns={progressCols} 
-              stickyLeftCount={1} 
-              onSort={handleProgressSort} 
-              sortKey={progressSortKey} 
-              sortDir={progressSortDir} 
-            /> 
-            {progressPageCount > 1 && ( 
-              <div className="mt-4 flex items-center justify-center gap-2"> 
-                <Button variant="secondary" onClick={() => setProgressPage((p) => Math.max(1, p - 1))} disabled={progressPage === 1}>Prev</Button> 
-                <span className="text-sm text-slate-600">Page {progressPage} of {progressPageCount}</span> 
-                <Button variant="secondary" onClick={() => setProgressPage((p) => Math.min(progressPageCount, p + 1))} disabled={progressPage === progressPageCount}>Next</Button> 
-              </div> 
-            )} 
           </Card> 
         )} 
         {activeView === "all" && ( 
-          <Card className="p-4"> 
-            <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
-              <h2 className="text-xl font-semibold text-slate-700">All Records</h2> 
-              <div className="flex items-center gap-2"> 
-                <Button variant="secondary" onClick={() => { setAllDrafts({}); setAllModified(false); fetchAllRecords(); }} className="text-sm">Refresh</Button> 
-                <Button variant="secondary" onClick={handleExportAll} className="text-sm">Export</Button> 
+          <Card title="All Records"> 
+            <div className="p-4">
+              <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
+                <h2 className="text-xl font-semibold text-slate-700">All Records</h2> 
+                <div className="flex items-center gap-2"> 
+                  <Button variant="secondary" onClick={() => { setAllDrafts({}); setAllModified(false); fetchAllRecords(); }} className="text-sm">Refresh</Button> 
+                  <Button variant="secondary" onClick={handleExportAll} className="text-sm">Export</Button> 
+                </div> 
               </div> 
+              {/* NEW: Save button for all records */}
+              <div className="mb-4">
+                <Button 
+                  onClick={handleSaveChanges} 
+                  disabled={!allModified}
+                  className="text-sm"
+                >
+                  Save Changes
+                </Button>
+              </div>
+              <ResizableTable 
+                rows={sortedAll} 
+                columns={allCols} 
+                stickyLeftCount={3} 
+                drafts={allDrafts} 
+                setDrafts={setAllDrafts} 
+                savingId={allSavingId} 
+                onUpdate={handleUpdateRow} 
+                onSort={handleAllSort} 
+                sortKey={allSortKey} 
+                sortDir={allSortDir} 
+                openCell={allOpenCell} 
+                setOpenCell={setAllOpenCell} 
+              /> 
+              {allPageCount > 1 && ( 
+                <div className="mt-4 flex items-center justify-center gap-2"> 
+                  <Button variant="secondary" onClick={() => setAllPage((p) => Math.max(1, p - 1))} disabled={allPage === 1}>Prev</Button> 
+                  <span className="text-sm text-slate-600">Page {allPage} of {allPageCount}</span> 
+                  <Button variant="secondary" onClick={() => setAllPage((p) => Math.min(allPageCount, p + 1))} disabled={allPage === allPageCount}>Next</Button> 
+                </div> 
+              )}
             </div> 
-            {/* NEW: Save button for all records */}
-            <div className="mb-4">
-              <Button 
-                onClick={handleSaveChanges} 
-                disabled={!allModified}
-                className="text-sm"
-              >
-                Save Changes
-              </Button>
-            </div>
-            <ResizableTable 
-              rows={sortedAll} 
-              columns={allCols} 
-              stickyLeftCount={3} 
-              drafts={allDrafts} 
-              setDrafts={setAllDrafts} 
-              savingId={allSavingId} 
-              onUpdate={handleUpdateRow} 
-              onSort={handleAllSort} 
-              sortKey={allSortKey} 
-              sortDir={allSortDir} 
-              openCell={allOpenCell} 
-              setOpenCell={setAllOpenCell} 
-            /> 
-            {allPageCount > 1 && ( 
-              <div className="mt-4 flex items-center justify-center gap-2"> 
-                <Button variant="secondary" onClick={() => setAllPage((p) => Math.max(1, p - 1))} disabled={allPage === 1}>Prev</Button> 
-                <span className="text-sm text-slate-600">Page {allPage} of {allPageCount}</span> 
-                <Button variant="secondary" onClick={() => setAllPage((p) => Math.min(allPageCount, p + 1))} disabled={allPage === allPageCount}>Next</Button> 
-              </div> 
-            )} 
           </Card> 
         )} 
       </div> 
