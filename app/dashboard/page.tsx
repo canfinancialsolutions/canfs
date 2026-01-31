@@ -11,6 +11,7 @@
  * - Upcoming Meetings: Refresh resets to default 30-day range; Show Results active green label. 
  * - Status columns render dropdown lists (incl. State). 
  * - Word-wrap + scrollable popups for Referred By, Product, Comment, Remark (and immigration_status, work_details). 
+ * - Save button above table: disabled by default, enabled when data modified, disabled on refresh.
  * 
  * No backend changes (schema, procedures, routes, auth, Supabase policies). 
  */ 
@@ -150,791 +151,183 @@ function labelFor(key: string) {
     ) 
     .join(" "); 
 } 
-function clientName(r: Row) { 
-  return `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim(); 
-} 
-function toLocalInput(value: any) { 
-  if (!value) return ""; 
-  const d = new Date(value); 
-  if (Number.isNaN(d.getTime())) return ""; 
-  const pad = (n: number) => String(n).padStart(2, "0"); 
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad( 
-    d.getHours() 
-  )}:${pad(d.getMinutes())}`; 
-} 
-function toLocalDateInput(value: any) { 
-  if (!value) return ""; 
-  const d = new Date(value); 
-  if (Number.isNaN(d.getTime())) return ""; 
-  const pad = (n: number) => String(n).padStart(2, "0"); 
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; 
-} 
-function fromLocalInput(value: string) { 
-  if (!value?.trim()) return null; 
-  const d = new Date(value); 
-  if (Number.isNaN(d.getTime())) return null; 
-  return d.toISOString(); 
-} 
-function fromLocalDate(value: string) { 
-  if (!value?.trim()) return null; 
-  const parts = value.split("-"); 
-  if (parts.length !== 3) return null; 
-  const [y, m, d] = parts.map((x) => Number(x)); 
-  const dt = new Date(y, (m ?? 1) - 1, d ?? 1); 
-  if (Number.isNaN(dt.getTime())) return null; 
-  return dt.toISOString(); 
-} 
-function asListItems(value: any): string[] { 
-  if (value == null) return []; 
-  if (Array.isArray(value)) return value.map((v) => String(v)).filter(Boolean); 
-  const s = String(value).trim(); 
-  if (!s) return []; 
-  if (s.includes(",")) return s.split(",").map((x) => x.trim()).filter(Boolean); 
-  return [s]; 
-} 
-function toggleSort(cur: { key: SortKey; dir: SortDir }, k: SortKey) { 
-  const DESC_FIRST = new Set<SortKey>(["CalledOn", "BOP_Date", "Followup_Date"]); 
-  if (cur.key !== k) { 
-    return { key: k, dir: (DESC_FIRST.has(k) ? "desc" : "asc") as SortDir }; 
-  } 
-  return { key: k, dir: cur.dir === "asc" ? ("desc" as SortDir) : ("asc" as SortDir) }; 
-} 
-function toggleProgressSort( 
-  cur: { key: ProgressSortKey; dir: SortDir }, 
-  k: ProgressSortKey 
-) { 
-  const DESC_FIRST = new Set<ProgressSortKey>([ 
-    "last_call_date", 
-    "last_bop_date", 
-    "last_followup_date", 
-  ]); 
-  if (cur.key !== k) { 
-    return { key: k, dir: (DESC_FIRST.has(k) ? "desc" : "asc") as SortDir }; 
-  } 
-  return { key: k, dir: cur.dir === "asc" ? ("desc" as SortDir) : ("asc" as SortDir) }; 
-} 
-function useColumnResizer() { 
-  const [widths, setWidths] = useState<Record<string, number>>({}); 
-  const resizeRef = useRef<{ 
-    colId: string; 
-    startX: number; 
-    startW: number; 
-    minW: number; 
-  } | null>(null); 
-  const startResize = ( 
-    e: React.MouseEvent, 
-    colId: string, 
-    curWidth: number, 
-    minW = 70 
-  ) => { 
-    e.preventDefault(); 
-    e.stopPropagation(); 
-    resizeRef.current = { colId, startX: e.clientX, startW: curWidth, minW }; 
-    const onMove = (ev: MouseEvent) => { 
-      if (!resizeRef.current) return; 
-      const dx = ev.clientX - resizeRef.current.startX; 
-      const next = Math.max(resizeRef.current.minW, resizeRef.current.startW + dx); 
-      setWidths((prev) => ({ ...prev, [resizeRef.current!.colId]: next })); 
-    }; 
-    const onUp = () => { 
-      resizeRef.current = null; 
-      window.removeEventListener("mousemove", onMove); 
-      window.removeEventListener("mouseup", onUp); 
-    }; 
-    window.addEventListener("mousemove", onMove); 
-    window.addEventListener("mouseup", onUp); 
-  }; 
-  return { widths, setWidths, startResize }; 
-} 
-const US_STATE_OPTIONS: string[] = [ 
-  "", 
-  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", 
-  "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", 
-  "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", 
-  "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", 
-  "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", 
-  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming", 
+const STATUS_OPTIONS = [ 
+  "", "New Client", "Interested", "In-Progress", "Closed", "On Hold", "Completed" 
 ]; 
-const IMMIGRATION_STATUS_OPTIONS: string[] = [ 
-  "", 
-  "U.S. Citizen", "U.S.Green Card", "H-1B", "H-1B/I-140 Approved", "L-1A", "L-1B", "F-1 Student", 
-  "F-1 OPT", "F-1 STEM OPT", "H-4 EAD", "E-3", "I-485 Pending", "I-485 EAD/AP", "Other Visa Status", 
+const BOP_STATUS_OPTIONS = ["", "Complete", "Call", "Meeting", "Closed"]; 
+const FOLLOWUP_STATUS_OPTIONS = ["", "Complete", "Call", "Closed"]; 
+const US_STATES = [ 
+  "", "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", 
+  "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", 
+  "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", 
+  "WV", "WI", "WY", 
 ]; 
-const STATUS_OPTIONS: Record<string, string[]> = { 
-  status: ["", "Prospect Client", "New Client",  "Existing Client", "Referral Client", "Initiated", "In-Progress", "On-Hold", "Closed", "Completed"], 
-  followup_status: ["", "Open", "In-Progress", "Follow-Up", "Follow-Up 2", "On Hold", "Completed"], 
-  "follow-up_status": ["", "Open", "In-Progress", "Follow-Up", "Follow-Up 2", "On Hold", "Completed"], 
-  client_status: ["", "New Client", "Initiated", "Interested", "In-Progress", "Closed", "On Hold", "Purchased", "Re-Opened", "Completed"],
-  bop_status: ["", "Presented", "Business", "Client", "In-Progress", "On-Hold", "Clarification", "Not Interested", "Completed", "Closed"], 
-  state: US_STATE_OPTIONS, 
-  immigration_status: IMMIGRATION_STATUS_OPTIONS, 
-}; 
-function optionsForKey(k: string): string[] | null { 
-  const lk = k.toLowerCase().replace(/\s+/g, "_"); 
-  if (lk in STATUS_OPTIONS) return STATUS_OPTIONS[lk]; 
+function optionsForKey(key: string): string[] | null { 
+  if (key === "client_status" || key === "status") return STATUS_OPTIONS; 
+  if (key === "BOP_Status") return BOP_STATUS_OPTIONS; 
+  if (key === "FollowUp_Status") return FOLLOWUP_STATUS_OPTIONS; 
+  if (key === "state") return US_STATES; 
   return null; 
 } 
-export default function Dashboard() {
-  const router = useRouter(); 
-  const [error, setError] = useState<string | null>(null); 
-  const [daily60, setDaily60] = useState<{ day: string; calls?: number; bops?: number; followups?: number }[]>([]); 
-  const [monthly12, setMonthly12] = useState<{ month: string; calls?: number; bops?: number; followups?: number }[]>([]); 
-  const [trendLoading, setTrendLoading] = useState(false); 
-  const [rangeStart, setRangeStart] = useState(format(new Date(), "yyyy-MM-dd")); 
-  const [rangeEnd, setRangeEnd] = useState(format(addDays(new Date(), 30), "yyyy-MM-dd")); 
-  const [upcoming, setUpcoming] = useState<Row[]>([]); 
-  const [upcomingLoading, setUpcomingLoading] = useState(false); 
-  const [sortUpcoming, setSortUpcoming] = useState<{ key: SortKey; dir: SortDir }>({ key: "BOP_Date", dir: "desc" }); 
-  const [progressRows, setProgressRows] = useState<Row[]>([]); 
-  const [progressLoading, setProgressLoading] = useState(false); 
-  const [progressFilter, setProgressFilter] = useState(""); 
-  const [progressSort, setProgressSort] = useState<{ key: ProgressSortKey; dir: SortDir }>({ key: "last_call_date", dir: "desc" }); 
-  const [progressPage, setProgressPage] = useState(0); 
-  const [q, setQ] = useState(""); 
-  const [records, setRecords] = useState<Row[]>([]); 
-  const [total, setTotal] = useState(0); 
-  const [page, setPage] = useState(0); 
-  const [pageJump, setPageJump] = useState("1"); 
-  const [loading, setLoading] = useState(true); 
-  const [savingId, setSavingId] = useState<string | null>(null); 
-  const [sortAll, setSortAll] = useState<{ key: SortKey; dir: SortDir }>({ key: "created_at", dir: "desc" }); 
-  const [recordsVisible, setRecordsVisible] = useState(false);  
-
-  const [trendsVisible, setTrendsVisible] = useState(false);
-  const [upcomingVisible, setUpcomingVisible] = useState(false);
-  const [progressVisible, setProgressVisible] = useState(false);
- 
-  useEffect(() => {
-    (async () => {
-      try {
-        // Guard: accept either the simple cookie auth (used by /auth) OR a Supabase session (if configured).
-        const cookieOk = hasAuthCookie();
-        if (!cookieOk) {
-          const supabase = getSupabase();
-          const { data } = await supabase.auth.getSession();
-          if (!data.session) {
-            router.replace("/auth?next=/dashboard");
-            return;
-          }
-        }
-        await Promise.all([fetchTrends(), fetchProgressSummary(), loadPage(0)]);
-      } catch (e: any) {
-        setError(e?.message ?? "Failed to initialize");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [router]); 
-  useEffect(() => { 
-    loadPage(0); 
-  }, [sortAll.key, sortAll.dir]); 
-  useEffect(() => { 
-    if (upcoming.length) fetchUpcoming(); 
-  }, [sortUpcoming.key, sortUpcoming.dir]); 
-  useEffect(() => { 
-    const id = setTimeout(() => { 
-      loadPage(0); 
-     const [recordsVisible, setRecordsVisible] = useState(false);  
-      setRecordsVisible(true); 
-    }, 300); 
-    return () => clearTimeout(id); 
-  }, [q]); 
-  function applySort(query: any, sort: { key: SortKey; dir: SortDir }) { 
-    const ascending = sort.dir === "asc"; 
-    if (sort.key === "client") return query.order("first_name", { ascending }).order("last_name", { ascending }); 
-    return query.order(sort.key, { ascending }); 
-  } 
- async function logout() { 
-    try { 
-      const supabase = getSupabase(); 
-      await supabase.auth.signOut(); 
-    } finally {
-      clearAuthCookie();
-      router.replace("/auth");
-    } 
-  } 
-  async function ut() { 
-    try { 
-      const supabase = getSupabase(); 
-      await supabase.auth.signOut(); 
-    } finally {
-      clearAuthCookie();
-      router.replace("/auth");
-    } 
-  } 
-  async function fetchTrends() { 
-    setTrendLoading(true); 
-    setError(null); 
-    try { 
-      const supabase = getSupabase(); 
-      const today = new Date(); 
-      const startDaily = subDays(today, 59); 
-      const [{ data: callsRows }, { data: bopsRows }, { data: fuRows }] = await Promise.all([ 
-        supabase.from("client_registrations").select("CalledOn").gte("CalledOn", startDaily.toISOString()).order("CalledOn", { ascending: true }).limit(50000), 
-        supabase.from("client_registrations").select("BOP_Date").gte("BOP_Date", startDaily.toISOString()).order("BOP_Date", { ascending: true }).limit(50000), 
-        supabase.from("client_registrations").select("Followup_Date").gte("Followup_Date", startDaily.toISOString()).order("Followup_Date", { ascending: true }).limit(50000), 
-      ]); 
-      const days: string[] = []; 
-      const callsDay = new Map<string, number>(); 
-      const bopsDay = new Map<string, number>(); 
-      const fuDay = new Map<string, number>(); 
-      for (let i = 0; i < 60; i++) { 
-        const d = addDays(startDaily, i); 
-        const key = format(d, "yyyy-MM-dd"); 
-        days.push(key); 
-        callsDay.set(key, 0); 
-        bopsDay.set(key, 0); 
-        fuDay.set(key, 0); 
-      } 
-      const bumpDay = (dateVal: any, map: Map<string, number>) => { 
-        if (!dateVal) return; 
-        const d = parseISO(String(dateVal)); 
-        if (!isValid(d)) return; 
-        const k = format(d, "yyyy-MM-dd"); 
-        if (map.has(k)) map.set(k, (map.get(k) ?? 0) + 1); 
-      }; 
-      (callsRows ?? []).forEach((r: any) => bumpDay(r.CalledOn, callsDay)); 
-      (bopsRows ?? []).forEach((r: any) => bumpDay(r.BOP_Date, bopsDay)); 
-      (fuRows ?? []).forEach((r: any) => bumpDay(r.Followup_Date, fuDay)); 
-      const nz = (n: number | undefined) => (n && n !== 0 ? n : undefined); 
-      setDaily60(days.map((day) => ({ day, calls: nz(callsDay.get(day) ?? 0), bops: nz(bopsDay.get(day) ?? 0), followups: nz(fuDay.get(day) ?? 0) }))); 
-      const startMonth = startOfMonth(subMonths(today, 11)); 
-      const months: string[] = []; 
-      const callsMonth = new Map<string, number>(); 
-      const bopsMonth = new Map<string, number>(); 
-      const fuMonth = new Map<string, number>(); 
-      for (let i = 0; i < 12; i++) { 
-        const mDate = addMonths(startMonth, i); 
-        const key = format(mDate, "yyyy-MM"); 
-        months.push(key); 
-        callsMonth.set(key, 0); 
-        bopsMonth.set(key, 0); 
-        fuMonth.set(key, 0); 
-      } 
-      const [{ data: callsY }, { data: bopsY }, { data: fuY }] = await Promise.all([ 
-        supabase.from("client_registrations").select("CalledOn").gte("CalledOn", startMonth.toISOString()).lt("CalledOn", addMonths(endOfMonth(today), 1).toISOString()).order("CalledOn", { ascending: true }).limit(200000), 
-        supabase.from("client_registrations").select("BOP_Date").gte("BOP_Date", startMonth.toISOString()).lt("BOP_Date", addMonths(endOfMonth(today), 1).toISOString()).order("BOP_Date", { ascending: true }).limit(200000), 
-        supabase.from("client_registrations").select("Followup_Date").gte("Followup_Date", startMonth.toISOString()).lt("Followup_Date", addMonths(endOfMonth(today), 1).toISOString()).order("Followup_Date", { ascending: true }).limit(200000), 
-         ]); 
-      const bumpMonth = (dateVal: any, map: Map<string, number>) => { 
-        if (!dateVal) return; 
-        const d = parseISO(String(dateVal)); 
-        if (!isValid(d)) return; 
-        const k = format(d, "yyyy-MM"); 
-        if (map.has(k)) map.set(k, (map.get(k) ?? 0) + 1); 
-      }; 
-      (callsY ?? []).forEach((r: any) => bumpMonth(r.CalledOn, callsMonth)); 
-      (bopsY ?? []).forEach((r: any) => bumpMonth(r.BOP_Date, bopsMonth)); 
-      (fuY ?? []).forEach((r: any) => bumpMonth(r.Followup_Date, fuMonth)); 
-      setMonthly12(months.map((month) => ({ month, calls: nz(callsMonth.get(month) ?? 0), bops: nz(bopsMonth.get(month) ?? 0), followups: nz(fuMonth.get(month) ?? 0) }))); 
-    } catch (e: any) { 
-      setError(e?.message ?? "Failed to load trends"); 
-    } finally { 
-      setTrendLoading(false); 
-    } 
-  } 
-  async function fetchUpcoming() { 
-    setUpcomingLoading(true); 
-    setError(null); 
-    try { 
-      const supabase = getSupabase(); 
-      const start = new Date(rangeStart); 
-      const end = new Date(rangeEnd); 
-      const startIso = start.toISOString(); 
-      const endIso = new Date(end.getTime() + 24 * 60 * 60 * 1000).toISOString(); 
-      const { data: bopRows, error: bopErr } = await supabase.from("client_registrations").select("*").gte("BOP_Date", startIso).lt("BOP_Date", endIso).limit(5000); 
-      if (bopErr) throw bopErr; 
-      const { data: fuRows, error: fuErr } = await supabase.from("client_registrations").select("*").gte("Followup_Date", startIso).lt("Followup_Date", endIso).limit(5000); 
-      if (fuErr) throw fuErr; 
-      const map = new Map<string, any>(); 
-      for (const r of bopRows ?? []) map.set(String((r as any).id), r); 
-      for (const r of fuRows ?? []) map.set(String((r as any).id), r); 
-      let merged = Array.from(map.values()); 
-      const asc = sortUpcoming.dir === "asc"; 
-      const key = sortUpcoming.key; 
-      const getVal = (r: any) => { 
-        if (key === "client") return `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim(); 
-        return r[key]; 
-      }; 
-      merged.sort((a: any, b: any) => { 
-        const av = getVal(a); 
-        const bv = getVal(b); 
-        if (key === "created_at" || key === "BOP_Date" || key === "Followup_Date" || key === "CalledOn" || key === "Issued") { 
-          const at = av ? new Date(av).getTime() : 0; 
-          const bt = bv ? new Date(bv).getTime() : 0; 
-          return asc ? at - bt : bt - at; 
-        } 
-        return asc ? String(av ?? "").localeCompare(String(bv ?? "")) : String(bv ?? "").localeCompare(String(av ?? "")); 
-      }); 
-      setUpcoming(merged); 
-      setUpcomingVisible(true); 
-    } catch (e: any) { 
-      setError(e?.message ?? "Failed to load upcoming meetings"); 
-    } finally { 
-      setUpcomingLoading(false); 
-    } 
-  } 
-  async function fetchProgressSummary() { 
-    setProgressLoading(true); 
-    setError(null); 
-    try { 
-      const supabase = getSupabase(); 
-      const { data, error } = await supabase 
-        .from("v_client_progress_summary") 
-        .select("clientid, first_name, last_name, phone, email, last_call_date, call_attempts, last_bop_date, bop_attempts, last_followup_date, followup_attempts") 
-        .order("clientid", { ascending: false }) 
-        .limit(10000); 
-      if (error) throw error; 
-      const rows = (data ?? []).map((r: any) => ({ 
-        clientid: r.clientid, 
-        client_name: `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim(), 
-        first_name: r.first_name, 
-        last_name: r.last_name, 
-        phone: r.phone, 
-        email: r.email, 
-        last_call_date: r.last_call_date, 
-        call_attempts: r.call_attempts, 
-        last_bop_date: r.last_bop_date, 
-        bop_attempts: r.bop_attempts, 
-        last_followup_date: r.last_followup_date, 
-        followup_attempts: r.followup_attempts, 
-      })); 
-      setProgressRows(rows); 
-      setProgressPage(0); 
-    } catch (e: any) { 
-      setError(e?.message ?? "Failed to load Client Progress Summary"); 
-    } finally { 
-      setProgressLoading(false); 
-    } 
-  } 
-  async function loadPage(nextPage: number) { 
-    setError(null); 
-    setLoading(true); 
-    try { 
-      const supabase = getSupabase(); 
-      const search = q.trim(); 
-      let countQuery = supabase.from("client_registrations").select("id", { count: "exact", head: true }); 
-      if (search) countQuery = countQuery.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,phone.ilike.%${search}%`); 
-      const { count, error: cErr } = await countQuery; 
-      if (cErr) throw cErr; 
-      setTotal(count ?? 0); 
-      const from = nextPage * ALL_PAGE_SIZE; 
-      const to = from + ALL_PAGE_SIZE - 1; 
-      let dataQuery = supabase.from("client_registrations").select("*").range(from, to); 
-      if (search) dataQuery = dataQuery.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,phone.ilike.%${search}%`); 
-      dataQuery = applySort(dataQuery, sortAll); 
-      const { data, error } = await dataQuery; 
-      if (error) throw error; 
-      setRecords(data ?? []); 
-      setPage(nextPage); 
-      setPageJump(String(nextPage + 1)); 
-    } catch (e: any) { 
-      setError(e?.message ?? "Failed to load records"); 
-    } finally { 
-      setLoading(false); 
-    } 
-  } 
-  async function updateCell(id: string, key: string, rawValue: string) { 
-    setSavingId(id); 
-    setError(null); 
-    try { 
-      const supabase = getSupabase(); 
-      const payload: any = {}; 
-      const isDateOnly = DATE_ONLY_KEYS.has(key); 
-      const isDateTime = DATE_TIME_KEYS.has(key); 
-      payload[key] = isDateTime ? fromLocalInput(rawValue) : isDateOnly ? fromLocalDate(rawValue) : rawValue?.trim() ? rawValue : null; 
-      const { error } = await supabase.from("client_registrations").update(payload).eq("id", id); 
-      if (error) throw error; 
-      const patch = (prev: Row[]) => prev.map((r) => (String(r.id) === String(id) ? { ...r, [key]: payload[key] } : r)); 
-      setRecords(patch); 
-      setUpcoming(patch); 
-    } catch (e: any) { 
-      setError(e?.message ?? "Update failed"); 
-      throw e; 
-    } finally { 
-      setSavingId(null); 
-    } 
-  } 
-  const totalPages = Math.max(1, Math.ceil((total ?? 0) / ALL_PAGE_SIZE)); 
-  const canPrev = page > 0; 
-  const canNext = (page + 1) * ALL_PAGE_SIZE < total; 
-  const exportUpcomingXlsx = () => { 
-    const ws = XLSX.utils.json_to_sheet(upcoming); 
-    const wb = XLSX.utils.book_new(); 
-    XLSX.utils.book_append_sheet(wb, ws, "Upcoming_BOP"); 
-    XLSX.writeFile(wb, `Upcoming_${rangeStart}_to_${rangeEnd}.xlsx`); 
-  }; 
-  const extraClientCol = useMemo(() => [{ label: "Client Name", sortable: "client" as SortKey, render: (r: Row) => clientName(r) }], []); 
-  const progressFilteredSorted = useMemo(() => { 
-    const needle = progressFilter.trim().toLowerCase(); 
-    const filtered = (progressRows ?? []).filter((r) => (!needle ? true : String(r.client_name ?? "").toLowerCase().includes(needle))); 
-    const dirMul = progressSort.dir === "asc" ? 1 : -1; 
-    const asNum = (v: any) => { const n = Number(v); return Number.isFinite(n) ? n : 0; }; 
-    const asTime = (v: any) => { if (!v) return 0; const d = new Date(v); const t = d.getTime(); return Number.isFinite(t) ? t : 0; }; 
-    filtered.sort((a, b) => { 
-      const k = progressSort.key; 
-      if (k === "client_name") return String(a.client_name ?? "").localeCompare(String(b.client_name ?? "")) * dirMul; 
-      if (k === "call_attempts" || k === "bop_attempts" || k === "followup_attempts") return (asNum(a[k]) - asNum(b[k])) * dirMul; 
-      return (asTime(a[k]) - asTime(b[k])) * dirMul; 
-    }); 
-    return filtered; 
-  }, [progressRows, progressFilter, progressSort]); 
-  const progressTotalPages = Math.max(1, Math.ceil(progressFilteredSorted.length / PROGRESS_PAGE_SIZE)); 
-  const progressPageSafe = Math.min(progressTotalPages - 1, Math.max(0, progressPage)); 
-  const progressSlice = progressFilteredSorted.slice(progressPageSafe * PROGRESS_PAGE_SIZE, progressPageSafe * PROGRESS_PAGE_SIZE + PROGRESS_PAGE_SIZE); 
-  const allVisible = trendsVisible && upcomingVisible && progressVisible && recordsVisible; 
-  const toggleAllCards = () => { 
-    const target = !allVisible; 
-    setTrendsVisible(target); 
-    setUpcomingVisible(target); 
-    setProgressVisible(target); 
-    setRecordsVisible(target); 
-  }; 
-  const hideZeroFormatter = (val: any) => { const n = Number(val); return Number.isFinite(n) && n === 0 ? "" : val; }; 
-  return ( 
-    <div className="min-h-screen"> 
-      <div className="max-w-[1600px] mx-auto p-4 space-y-4"> 
-        <header className="flex items-center justify-between gap-2"> 
-          <div className="flex items-center gap-2"> 
-            <img src="/can-logo.png" className="h-12 w-auto" alt="CAN Logo" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} /> 
-            <div> 
-               <div className="text-1x2 font-bold text-blue-800">Dashboard - Clients Report</div>
-               <div className="text-sm font-semibold text-yellow-500">Caring today, advancing tomorrow</div>
-            </div> 
-          </div> 
-          <div className="flex items-center gap-2"> 
-  {(() => {
-    const newClientsCount = records.filter(r => r.status === "New Client").length;
-    const latestIssuedDate = records.map(r => r.Issued).filter(Boolean).map(d => new Date(d)).sort((a,b)=>b.getTime()-a.getTime())[0];
-     
-    const cycleStart = latestIssuedDate ? latestIssuedDate.toLocaleDateString() : "—";
-    const cycleEnd = latestIssuedDate ? new Date(latestIssuedDate.getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString() : "—";
-
-    const cycleDays = latestIssuedDate ? Math.floor((Date.now()-latestIssuedDate.getTime())/(1000*60*60*24)) : 0;
-    const today = new Date().toISOString().split("T")[0];
-    const meetingTodayCount = records.filter(r => r.BOP_Date?.startsWith(today) || r.Followup_Date?.startsWith(today)).length;
-    const meetingTomorrowCount = records.filter(r => r.BOP_Date?.startsWith(today+1) || r.Followup_Date?.startsWith(today+1)).length;
-     
-    return (<div className="flex gap-2 mr-4">
-    <div className="px-3 py-1 bg-gray-200 text-xs font-semibold rounded text-center">
-      New Clients✏️{newClientsCount}
-    </div>
-    <div className="px-3 py-1 bg-gray-200 text-xs font-semibold rounded text-center">Cycle Start on↪️{cycleStart}</div>
-    <div className="px-3 py-1 bg-gray-200 text-xs font-semibold rounded text-center">Cycle End on↩️{cycleEnd}</div>
-    <div className="px-3 py-2 bg-gray-200 text-xs font-semibold rounded text-center text-xs font-bosemiboldld">Cycle Days🔄 {cycleDays}</div>
-    <div className="px-3 py-2 bg-gray-200 text-xs font-semibold rounded text-center text-xs font-bosemiboldld">Today Meetings📣 {meetingTodayCount}</div>
-    </div>);
-  })()}
-            <Button variant="secondary" onClick={toggleAllCards}>{allVisible ? "Hide Cards📦" : "Show Cards🗃️"}</Button> 
-            <Button variant="secondary" onClick={logout}> 
-              <span className="inline-flex items-center gap-2"> 
-               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 002 2h3a2 2 0 002-2v-1m-6-10V5a2 2 0 012-2h3a2 2 0 012 2v1" /> 
-                 Logout ➜]
-              </span> 
-            </Button> 
-          </div> 
-        </header> 
-        {error && (<div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">{error}</div>)} 
-        <Card title="Trends 📊"> 
-  <div className="mb-2">
-    <Button variant="secondary" onClick={() => setTrendsVisible(v => !v)}>
-      {trendsVisible ? "Hide 📊" : "Show 📊"}
-    </Button>
-  </div>
-          {trendsVisible ? ( 
-            <> 
-              <div className="text-xs font-semibold text-black mb-2">Rolling 12 Months</div> 
-              <div className="h-64"> 
-                <ResponsiveContainer width="100%" height="100%"> 
-                  <BarChart data={monthly12}> 
-                    <XAxis dataKey="month" tick={{ fontSize: 11 }} /> 
-                    <YAxis allowDecimals={false} /> 
-                    <Tooltip /> 
-                    <Bar dataKey="calls" fill="#2563eb"> 
-                      <LabelList dataKey="calls" position="top" fill="#0f172a" formatter={hideZeroFormatter} /> 
-                    </Bar> 
-                    <Bar dataKey="bops" fill="#f97316"> 
-                      <LabelList dataKey="bops" position="top" fill="#0f172a" formatter={hideZeroFormatter} /> 
-                    </Bar> 
-                    <Bar dataKey="followups" fill="#10b981"> 
-                      <LabelList dataKey="followups" position="top" fill="#0f172a" formatter={hideZeroFormatter} /> 
-                    </Bar> 
-                  </BarChart> 
-                </ResponsiveContainer> 
-              </div> 
-              {trendLoading && <div className="mt-2 text-xs text-black">Loading…</div>} 
-            </> 
-          ) : ( 
-            <div className="text-sm text-black">Results are hidden.</div> 
-          )} 
-        </Card> 
-        <Card title="Upcoming Meetings📣"> 
-          <div className="grid md:grid-cols-5 gap-3 items-end"> 
-            <label className="block md:col-span-1"> 
-              <div className="text-xs font-semibold text-black mb-1">Start</div> 
-              <input type="date" className="w-32 border border-slate-300 px-2 py-1" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} /> 
-            </label> 
-            <label className="block md:col-span-1"> 
-              <div className="text-xs font-semibold text-black mb-1">End</div> 
-              <input type="date" className="w-32 border border-slate-300 px-2 py-1" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} /> 
-            </label> 
-            <div className="flex gap-2 md:col-span-3"> 
-              <Button variant="secondary" onClick={() => fetchUpcoming()}><b>➡️</b></Button> 
-              <Button 
-                variant="secondary" 
-                onClick={() => { 
-                  const today = new Date(); 
-                  const start = format(today, "yyyy-MM-dd"); 
-                  const end = format(addDays(today, 30), "yyyy-MM-dd"); 
-                  setRangeStart(start); 
-                  setRangeEnd(end); 
-                  fetchUpcoming(); 
-                }} 
-                disabled={upcomingLoading} 
-              > 
-                {upcomingLoading ? "Refreshing…" : "🔄"} 
-              </Button> 
-             <Button variant="secondary" onClick={exportUpcomingXlsx} disabled={upcoming.length === 0}>📤</Button> 
-             <Button variant="secondary" onClick={() => setUpcomingVisible((v) => !v)}> 
-                <span className={upcomingVisible ? "text-black" : undefined}> 
-                  {upcomingVisible ? "Hide🗂️" : "Show🗂️"} 
-                </span> 
-              </Button> 
-            </div> 
-          </div> 
-          <div className="flex items-center justify-between mb-2 mt-3"> 
-            <div className="text-sm text-black">Table supports vertical + horizontal scrolling.</div> 
-            <div className="text-xs text-black"> 
-              Click headers to sort: <b>Client Name</b>, <b>Created Date</b>, <b>BOP Date</b>, <b>BOP Status</b>, <b>Follow-Up Date</b>, <b>Status</b>. 
-            </div> 
-          </div> 
-          {upcomingVisible && ( 
-            <ExcelTableEditable 
-              rows={upcoming} 
-              savingId={savingId} 
-              onUpdate={updateCell} 
-              preferredOrder={[ 
-                "created_at", "status", "first_name", "last_name", "interest_type", "business_opportunities", "wealth_solutions", 
-                "CalledOn", "BOP_Date", "BOP_Status", "Followup_Date", "FollowUp_Status", "Product", "Comment", "Remark", 
-                "client_status", "phone", "email", 
-                "spouse_name", "date_of_birth", "children", "city", "state", "profession", "work_details", "immigration_status", 
-                "referred_by", "preferred_days", "preferred_time", 
-              ]} 
-              extraLeftCols={[{ label: "Client Name", sortable: "client", render: (r) => clientName(r) }]} 
-              maxHeightClass="max-h-[420px]" 
-              sortState={sortUpcoming} 
-              onSortChange={(k) => setSortUpcoming((cur) => toggleSort(cur, k))} 
-              stickyLeftCount={1} 
-              nonEditableKeys={new Set(["spouse_name", "date_of_birth", "children", "city", "work_details"])} 
-              viewOnlyPopupKeys={new Set(["work_details"])} 
-            /> 
-          )} 
-        </Card> 
-        <Card title="Client Progress Summary📑"> 
-          <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2"> 
-            <input className="w-72 border border-slate-300 px-3 py-2" placeholder="Filter by client name..." value={progressFilter} onChange={(e) => { setProgressFilter(e.target.value); setProgressPage(0); }} /> 
-            <Button variant="secondary" onClick={() => setProgressVisible(true)}>➡️</Button> 
-            <Button variant="secondary" onClick={() => { setProgressFilter(""); fetchProgressSummary().then(() => setProgressVisible(true)); }} disabled={progressLoading}>{progressLoading ? "Loading…" : "🔄"}</Button> 
-            <Button variant="secondary" onClick={() => setProgressVisible((v) => !v)}>{progressVisible ? "Hide🗂️" : "Show🗂️"}</Button> 
-            <div className="md:ml-auto flex items-center gap-2"> 
-              <Button variant="secondary" onClick={() => setProgressPage((p) => Math.max(0, p - 1))} disabled={!progressVisible || progressPageSafe <= 0}>◀️</Button> 
-              <Button variant="secondary" onClick={() => setProgressPage((p) => Math.min(progressTotalPages - 1, p + 1))} disabled={!progressVisible || progressPageSafe >= progressTotalPages - 1}>▶️</Button> 
-            </div> 
-          </div> 
-          <div className="text-xs text-black mb-2">Click headers to sort.</div> 
-          {progressVisible && (<ProgressSummaryTable rows={progressSlice} sortState={progressSort} onSortChange={(k) => setProgressSort((cur) => toggleProgressSort(cur, k))} />)} 
-          {progressVisible && (<div className="mt-2 text-xs text-black">Page <b>{progressPageSafe + 1}</b> of <b>{progressTotalPages}</b> • showing {PROGRESS_PAGE_SIZE} per page</div>)} 
-        </Card> 
-        <Card title="Clients List 🧑🏻‍🤝‍🧑🏻"> 
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-2"> 
-            <div className="flex flex-col md:flex-row md:items-center gap-2 w-full"> 
-              <input className="w-80 border border-slate-300 px-3 py-2" placeholder="Search by first name, last name, or phone" value={q} onChange={(e) => setQ(e.target.value)} /> 
-              <Button variant="secondary" onClick={() => loadPage(0)}>➡️</Button> 
-              <Button variant="secondary" onClick={() => { setQ(""); loadPage(0); setRecordsVisible(true); }}>🔄</Button> 
-              <Button variant="secondary" onClick={() => setRecordsVisible((v) => !v)}>{recordsVisible ? "Hide🗂️" : "Show🗂️"}</Button> 
-            </div> 
-            <div className="flex items-center gap-2"> 
-              <div className="flex items-center gap-2 border border-slate-300 px-4 py-3 bg-white"> 
-                <span className="text-xs font-semibold text-black">Go Page</span>
-                <input type="number" min={1} max={totalPages} className="w-20 border border-slate-300 px-3 py-2 text-sm" value={pageJump} onChange={(e) => setPageJump(e.target.value)} /> 
-                <Button variant="secondary" onClick={() => { const n = Number(pageJump); if (!Number.isFinite(n)) return; const p = Math.min(totalPages, Math.max(1, Math.floor(n))); loadPage(p - 1); }} disabled={loading || totalPages <= 1}>➡️</Button> 
-              </div> 
-              <Button variant="secondary" onClick={() => loadPage(Math.max(0, page - 1))} disabled={!canPrev || loading}>◀️</Button> 
-              <Button variant="secondary" onClick={() => loadPage(page + 1)} disabled={!canNext || loading}>▶️</Button> 
-            </div> 
-          </div> 
-          <div className="text-sm text-black mb-2">{total.toLocaleString()} records • showing {ALL_PAGE_SIZE} per page</div> 
-   
-<div className="flex gap-4 mb-2 text-xs font-semibold text-black">
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#B1FB17] rounded"></span>New Client</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#728FCE] rounded"></span>Interested</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#ADDFFF] rounded"></span>In-Progress</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#C9BE62] rounded"></span>On Hold</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#E6BF83] rounded"></span>Closed</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#3CB371] rounded"></span>Completed</div>
-</div>
-
-{recordsVisible && ( 
-            <> 
-              {loading ? ( 
-                <div className="text-black">Loading…</div> 
-              ) : ( 
-                <ExcelTableEditable 
-                  rows={records} 
-                  savingId={savingId} 
-                  onUpdate={updateCell} 
-                  extraLeftCols={[{ label: "Client Name", sortable: "client", render: (r) => clientName(r) }]} 
-                  maxHeightClass="max-h-[560px]" 
-                  sortState={sortAll} 
-                  onSortChange={(k) => setSortAll((cur) => toggleSort(cur, k))} 
-                  stickyLeftCount={1} 
-                  viewOnlyPopupKeys={new Set()} 
-                /> 
-              )} 
-            </> 
-          )} 
-        </Card> 
-      </div> 
-    </div> 
-  ); 
+function asListItems(value: any): string[] { 
+  if (!value) return []; 
+  if (typeof value === "string") return value.split(",").map((s) => s.trim()).filter(Boolean); 
+  if (Array.isArray(value)) return value.map(String).filter(Boolean); 
+  return []; 
 } 
-function ProgressSummaryTable({ rows, sortState, onSortChange }: { rows: Row[]; sortState: { key: ProgressSortKey; dir: SortDir }; onSortChange: (k: ProgressSortKey) => void; }) { 
-  const { widths, startResize } = useColumnResizer(); 
-  const cols = useMemo(() => [ 
-    { id: "client_name", label: "Client Name", key: "client_name" as ProgressSortKey, defaultW: 170 }, 
-    { id: "first_name", label: "First Name", defaultW: 95 }, 
-    { id: "last_name", label: "Last Name", defaultW: 90 }, 
-    { id: "phone", label: "Phone", defaultW: 105 }, 
-    { id: "email", label: "Email", defaultW: 220 }, 
-    { id: "last_call_date", label: "Called On", key: "last_call_date" as ProgressSortKey, defaultW: 190 }, 
-    { id: "call_attempts", label: "No of Calls", key: "call_attempts" as ProgressSortKey, defaultW: 90 }, 
-    { id: "last_bop_date", label: "Last/Next BOP Call On", key: "last_bop_date" as ProgressSortKey, defaultW: 200 }, 
-    { id: "bop_attempts", label: "No of BOP Calls", key: "bop_attempts" as ProgressSortKey, defaultW: 110 }, 
-    { id: "last_followup_date", label: "Last/Next FollowUp On", key: "last_followup_date" as ProgressSortKey, defaultW: 200 }, 
-    { id: "followup_attempts", label: "No of FollowUp Calls", key: "followup_attempts" as ProgressSortKey, defaultW: 140 }, 
-  ], []); 
-  const getW = (id: string, def: number) => widths[id] ?? def; 
-  const stickyLeftPx = (colIndex: number) => (colIndex <= 0 ? 0 : 0); 
-  const sortIcon = (k?: ProgressSortKey) => { if (!k) return null; if (sortState.key !== k) return <span className="ml-1 text-black">↕</span>; return <span className="ml-1 text-black">{sortState.dir === "asc" ? "↑" : "↓"}</span>; }; 
-  const minWidth = cols.reduce((sum, c) => sum + getW(c.id, c.defaultW), 0); 
-  const fmtDate = (v: any) => { if (!v) return "—"; const d = new Date(v); const t = d.getTime(); if (!Number.isFinite(t)) return "—"; return d.toLocaleString(); }; 
-  const fmtCount = (v: any) => { const n = Number(v); if (!Number.isFinite(n)) return "—"; return String(n); }; 
-  return ( 
-    <div className="overflow-auto border border-slate-500 bg-white max-h-[520px]"> 
-      <table className="w-full table-fixed border-collapse" style={{ minWidth }}> 
-        <thead className="sticky top-0 bg-slate-100 z-20"> 
-          <tr className="text-left text-xs font-semibold text-black"> 
-            {cols.map((c, idx) => { 
-              const w = getW(c.id, c.defaultW); 
-              const isSticky = idx === 0; 
-              const style: React.CSSProperties = { 
-                width: w, minWidth: w, maxWidth: w, position: isSticky ? "sticky" : undefined, left: isSticky ? stickyLeftPx(idx) : undefined, top: 0, zIndex: isSticky ? 40 : 20, background: isSticky ? "#f1f5f9" : undefined, 
-              }; 
-              return ( 
-                <th key={c.id} className="border border-slate-500 px-2 py-2 whitespace-nowrap relative" style={style}> 
-                  {"key" in c ? ( 
-                    <button className="inline-flex items-center hover:underline" onClick={() => onSortChange((c as any).key!)} type="button"> 
-                      {c.label} 
-                      {sortIcon((c as any).key)} 
-                    </button> 
-                  ) : ( 
-                    c.label 
-                  )} 
-                  <div className="absolute top-0 right-0 h-full w-2 cursor-col-resize select-none" onMouseDown={(e) => startResize(e, c.id, w)}> 
-                    <div className="mx-auto h-full w-px bg-slate-300" /> 
-                  </div> 
-                </th> 
-              ); 
-            })} 
-          </tr> 
-        </thead> 
-        <tbody> 
-          {rows.map((r, ridx) => ( 
-            <tr key={String((r as any).clientid ?? ridx)} className="hover:bg-slate-50"> 
-              {cols.map((c, idx) => { 
-                const w = getW(c.id, c.defaultW); 
-                const isSticky = idx === 0; 
-                const style: React.CSSProperties = { 
-                  width: w, minWidth: w, maxWidth: w, position: isSticky ? "sticky" : undefined, left: isSticky ? stickyLeftPx(idx) : undefined, zIndex: isSticky ? 10 : 1, background: isSticky ? "#ffffff" : undefined, verticalAlign: "middle", 
-                }; 
-                let v = "—"; 
-                let tdClass = "border border-slate-300 px-2 py-2 whitespace-nowrap"; 
-                if (c.id === "client_name") v = String(r.client_name ?? "—"); 
-                else if (c.id === "first_name") v = String(r.first_name ?? "—"); 
-                else if (c.id === "last_name") v = String(r.last_name ?? "—"); 
-                else if (c.id === "phone") v = String(r.phone ?? "—"); 
-                else if (c.id === "email") v = String(r.email ?? "—"); 
-                else if (c.id === "last_call_date") v = fmtDate(r.last_call_date); 
-                else if (c.id === "call_attempts") { v = fmtCount(r.call_attempts); tdClass += " text-center align-middle"; } 
-                else if (c.id === "last_bop_date") v = fmtDate(r.last_bop_date); 
-                else if (c.id === "bop_attempts") { v = fmtCount(r.bop_attempts); tdClass += " text-center align-middle"; } 
-                else if (c.id === "last_followup_date") v = fmtDate(r.last_followup_date); 
-                else if (c.id === "followup_attempts") { v = fmtCount(r.followup_attempts); tdClass += " text-center align-middle"; } 
-                return (<td key={c.id} className={`${tdClass} ${isSticky ? "font-semibold text-black" : ""}`} style={style}>{v}</td>); 
-              })} 
-            </tr> 
-          ))} 
-        </tbody> 
-      </table> 
-    </div> 
-  ); 
+const WRAP_KEYS = new Set([ 
+  "Comment", "Remark", "Product", "referred_by", "immigration_status", "work_details" 
+]); 
+const viewOnlyPopupKeys = new Set(["Product", "referred_by", "immigration_status", "work_details"]); 
+const SAVE_KEY_NORMALIZE: Record<string, string> = {}; 
+const nonEditableKeys = new Set(["client_name", "email", "phone"]); 
+function getCellValueForInput(r: Row, key: string): string { 
+  const v = r[key]; 
+  if (v == null) return ""; 
+  if (DATE_TIME_KEYS.has(key) || DATE_ONLY_KEYS.has(key)) { 
+    const d = new Date(v); 
+    if (Number.isNaN(d.getTime())) return ""; 
+    if (DATE_ONLY_KEYS.has(key)) { 
+      const yyyy = d.getFullYear(); 
+      const mm = String(d.getMonth() + 1).padStart(2, "0"); 
+      const dd = String(d.getDate()).padStart(2, "0"); 
+      return `${yyyy}-${mm}-${dd}`; 
+    } 
+    const yyyy = d.getFullYear(); 
+    const mm = String(d.getMonth() + 1).padStart(2, "0"); 
+    const dd = String(d.getDate()).padStart(2, "0"); 
+    const HH = String(d.getHours()).padStart(2, "0"); 
+    const MM = String(d.getMinutes()).padStart(2, "0"); 
+    return `${yyyy}-${mm}-${dd}T${HH}:${MM}`; 
+  } 
+  return String(v); 
 } 
-function ExcelTableEditable({ 
-  rows, savingId, onUpdate, extraLeftCols, maxHeightClass, sortState, onSortChange, preferredOrder, stickyLeftCount = 1, nonEditableKeys = new Set<string>(), viewOnlyPopupKeys = new Set<string>(), 
+async function callRPC<T = any>( 
+  name: string, 
+  params: Record<string, any> = {} 
+): Promise<T | null> { 
+  try { 
+    const sb = getSupabase(); 
+    const { data, error } = await sb.rpc(name, params); 
+    if (error) { 
+      console.error(`[callRPC] ${name}:`, error); 
+      return null; 
+    } 
+    return data as T; 
+  } catch (err) { 
+    console.error("[callRPC] exception:", err); 
+    return null; 
+  } 
+} 
+/** ------- Reusable table with column resize, sort, sticky left, etc. ------- */ 
+function shouldHighlight(key: string, row: Row): boolean { 
+  if (!HIGHLIGHT_DATE_KEYS.has(key)) return false; 
+  return dateOnOrAfterToday(row[key]); 
+} 
+function ResizableTable({ 
+  rows, 
+  columns, 
+  stickyLeftCount = 0, 
+  extraLeftCols = [], 
+  drafts = {}, 
+  setDrafts, 
+  savingId = null, 
+  onUpdate, 
+  onSort, 
+  sortKey, 
+  sortDir, 
+  openCell, 
+  setOpenCell, 
 }: { 
-  rows: Row[]; savingId: string | null; onUpdate: (id: string, key: string, value: string) => Promise<void>; 
-  extraLeftCols: { label: string; render: (r: Row) => string; sortable?: SortKey }[]; maxHeightClass: string; 
-  sortState: { key: SortKey; dir: SortDir }; onSortChange: (key: SortKey) => void; preferredOrder?: string[]; stickyLeftCount?: number; 
-  nonEditableKeys?: Set<string>; viewOnlyPopupKeys?: Set<string>; 
+  rows: Row[]; 
+  columns: { id: string; key?: string; kind?: string; defaultW?: number; sortable?: boolean }[]; 
+  stickyLeftCount?: number; 
+  extraLeftCols?: { render: (r: Row) => React.ReactNode; headerLabel: string }[]; 
+  drafts?: Record<string, string>; 
+  setDrafts?: React.Dispatch<React.SetStateAction<Record<string, string>>>; 
+  savingId?: number | string | null; 
+  onUpdate?: (rowId: string, key: string, value: string) => Promise<void>; 
+  onSort?: (key: string) => void; 
+  sortKey?: string; 
+  sortDir?: "asc" | "desc"; 
+  openCell?: string | null; 
+  setOpenCell?: React.Dispatch<React.SetStateAction<string | null>>; 
 }) { 
-  const { widths, startResize } = useColumnResizer(); 
-  const [openCell, setOpenCell] = useState<string | null>(null); 
-  const [drafts, setDrafts] = useState<Record<string, string>>({}); 
-  const sortIcon = (k?: SortKey) => { if (!k) return null; if (sortState.key !== k) return <span className="ml-1 text-black">↕</span>; return <span className="ml-1 text-black">{sortState.dir === "asc" ? "↑" : "↓"}</span>; }; 
-  const keys = useMemo(() => { 
-    if (!rows.length) return [] as string[]; 
-    const baseKeys = Object.keys(rows[0]).filter((k) => k !== "id"); 
-    if (!preferredOrder || !preferredOrder.length) return baseKeys; 
-    const set = new Set(baseKeys); 
-    const ordered: string[] = []; 
-    for (const k of preferredOrder) if (set.has(k)) ordered.push(k); 
-    for (const k of baseKeys) if (!ordered.includes(k)) ordered.push(k); 
-    return ordered; 
-  }, [rows, preferredOrder]); 
-  const WRAP_KEYS = new Set(["referred_by", "Product", "Comment", "Remark", "product", "comment", "remark", "immigration_status", "work_details"]); 
-  const SAVE_KEY_NORMALIZE: Record<string, string> = { comment: "Comment", remark: "Remark", product: "Product", Comment: "Comment", Remark: "Remark", Product: "Product", ReferredBy: "referred_by", referredby: "referred_by" }; 
-  const columns = useMemo(() => { 
-    const extra = extraLeftCols.map((c, i) => ({ id: `extra:${i}`, label: c.label, sortable: c.sortable, kind: "extra" as const, defaultW: c.label.toLowerCase().includes("client") ? 180 : 150 })); 
-    const main = keys.map((k) => { 
-      const label = labelFor(k); 
-      const isDateTime = DATE_TIME_KEYS.has(k); 
-      const isDateOnly = DATE_ONLY_KEYS.has(k); 
-      const defaultW = k === "created_at" ? 120 : isDateTime ? 220 : isDateOnly ? 180 : k.toLowerCase().includes("email") ? 240 : WRAP_KEYS.has(k) || READONLY_LIST_COLS.has(k) ? 260 : 160; 
-      const sortable = k === "created_at" ? ("created_at" as SortKey) : k === "BOP_Date" ? ("BOP_Date" as SortKey) : k === "BOP_Status" ? ("BOP_Status" as SortKey) : k === "Followup_Date" ? ("Followup_Date" as SortKey) : k === "status" ? ("status" as SortKey) : k === "CalledOn" ? ("CalledOn" as SortKey) : k === "Issued" ? ("Issued" as SortKey) : undefined; 
-      return { id: `col:${k}`, key: k, label, sortable, kind: "data" as const, defaultW }; 
+  const allColsString = columns.map((c) => c.id).join(","); 
+  const containerRef = useRef<HTMLDivElement | null>(null); 
+  const [widths, setWidths] = useState<Record<string, number>>({}); 
+  useEffect(() => { 
+    const stored = window.localStorage.getItem("dashTableWidths"); 
+    if (stored) { 
+      try { 
+        const obj = JSON.parse(stored); 
+        setWidths(obj ?? {}); 
+      } catch { 
+        setWidths({}); 
+      } 
+    } 
+  }, [allColsString]); 
+  const getW = (id: string, fallback = 160) => widths[id] ?? fallback; 
+  const setW = (id: string, w: number) => { 
+    setWidths((prev) => { 
+      const next = { ...prev, [id]: w }; 
+      window.localStorage.setItem("dashTableWidths", JSON.stringify(next)); 
+      return next; 
     }); 
-    return [...extra, ...main]; 
-  }, [extraLeftCols, keys]); 
-  const getW = (id: string, def: number) => widths[id] ?? def; 
-  const stickyLeftPx = (colIndex: number) => { let left = 0; for (let i = 0; i < colIndex; i++) { const c = (columns as any)[i]; left += getW(c.id, c.defaultW ?? 160); } return left; }; 
-  const minWidth = (columns as any).reduce((sum: number, c: any) => sum + getW(c.id, c.defaultW ?? 160), 0); 
-  const getCellValueForInput = (r: Row, k: string) => { const isDateTime = DATE_TIME_KEYS.has(k); const isDateOnly = DATE_ONLY_KEYS.has(k); const val = r[k]; if (isDateTime) return toLocalInput(val); if (isDateOnly) return toLocalDateInput(val); return val ?? ""; }; 
-  const shouldHighlight = (k: string, r: Row) => HIGHLIGHT_DATE_KEYS.has(k) && dateOnOrAfterToday(r[k]); 
+  }; 
+  const startResize = (e: React.MouseEvent, colId: string, oldW: number) => { 
+    e.preventDefault(); 
+    const startX = e.clientX; 
+    let latestW = oldW; 
+    const onMove = (evt: MouseEvent) => { 
+      const delta = evt.clientX - startX; 
+      const newW = Math.max(50, oldW + delta); 
+      latestW = newW; 
+      setWidths((prev) => ({ ...prev, [colId]: newW })); 
+    }; 
+    const onUp = () => { 
+      document.removeEventListener("mousemove", onMove); 
+      document.removeEventListener("mouseup", onUp); 
+      setW(colId, latestW); 
+    }; 
+    document.addEventListener("mousemove", onMove); 
+    document.addEventListener("mouseup", onUp); 
+  }; 
+  const stickyLeftPx = (idx: number) => { 
+    let acc = 0; 
+    for (let i = 0; i < idx; i++) { 
+      const c = columns[i]; 
+      acc += getW(c.id, c.defaultW ?? 160); 
+    } 
+    return acc; 
+  }; 
+  const sortIcon = (sortable?: boolean) => { 
+    if (!sortable) return null; 
+    if (sortDir === "asc") return <span className="ml-1">▲</span>; 
+    if (sortDir === "desc") return <span className="ml-1">▼</span>; 
+    return <span className="ml-1 text-slate-400">⬍</span>; 
+  }; 
   return ( 
-    <div className={`overflow-auto border border-slate-500 bg-white ${maxHeightClass}`}> 
-      <table className="w-full table-fixed border-collapse" style={{ minWidth }}> 
-        <thead className="sticky top-0 bg-slate-100 z-20"> 
-          <tr className="text-left text-xs font-semibold text-black"> 
-            {(columns as any).map((c: any, colIndex: number) => { 
+    <div ref={containerRef} className="relative overflow-auto border border-slate-300" style={{ maxHeight: "70vh" }}> 
+      <table className="border-collapse table-auto" style={{ borderSpacing: 0 }}> 
+        <thead className="bg-slate-100 sticky top-0 z-20"> 
+          <tr> 
+            {(columns as any).map((c: any, idx: number) => { 
               const w = getW(c.id, c.defaultW ?? 160); 
-              const isSticky = colIndex < stickyLeftCount; 
-              const isTopLeft = isSticky; 
-              const style: React.CSSProperties = { width: w, minWidth: w, maxWidth: w, position: isSticky ? "sticky" : undefined, left: isSticky ? stickyLeftPx(colIndex) : undefined, top: 0, zIndex: isTopLeft ? 50 : 20, background: isSticky ? "#f1f5f9" : undefined }; 
-              const headerLabel = c.label; 
+              const isSticky = idx < stickyLeftCount; 
+              const style: React.CSSProperties = { width: w, minWidth: w, maxWidth: w, position: isSticky ? "sticky" : undefined, left: isSticky ? stickyLeftPx(idx) : undefined, zIndex: isSticky ? 21 : 20, background: isSticky ? "#f1f5f9" : undefined }; 
+              const headerLabel = (() => { 
+                if (c.kind === "extra") { 
+                  const eIdx = Number(String(c.id).split(":")[1] ?? "0"); 
+                  return extraLeftCols[eIdx]?.headerLabel ?? ""; 
+                } 
+                if (c.key) return labelFor(c.key as string); 
+                return String(c.id); 
+              })(); 
               return ( 
-                <th key={c.id} className="border border-slate-500 px-2 py-2 whitespace-nowrap relative" style={style}> 
-                  {c.sortable ? ( 
-                    <button className="inline-flex items-center hover:underline" onClick={() => onSortChange(c.sortable)} type="button"> 
+                <th key={c.id} className="border border-slate-300 px-2 py-1 text-left font-semibold text-sm" style={style}> 
+                  {c.sortable && onSort ? ( 
+                    <button type="button" className="w-full text-left" onClick={() => onSort(c.key as string)}> 
                       {headerLabel} 
                       {sortIcon(c.sortable)} 
                     </button> 
@@ -1080,6 +473,678 @@ function ExcelTableEditable({
           ))} 
         </tbody> 
       </table> 
+    </div> 
+  ); 
+} 
+export default function DashboardPage() { 
+  const router = useRouter(); 
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(""); 
+  // "upcoming" vs "progress" vs "all" 
+  const [activeView, setActiveView] = useState<"upcoming" | "progress" | "all">("upcoming"); 
+  // Upcoming Meetings 
+  const [upcomingRows, setUpcomingRows] = useState<Row[]>([]); 
+  const [upcomingSortKey, setUpcomingSortKey] = useState<SortKey>("BOP_Date"); 
+  const [upcomingSortDir, setUpcomingSortDir] = useState<SortDir>("asc"); 
+  const [upcomingDrafts, setUpcomingDrafts] = useState<Record<string, string>>({}); 
+  const [upcomingSavingId, setUpcomingSavingId] = useState<number | string | null>(null); 
+  const [upcomingOpenCell, setUpcomingOpenCell] = useState<string | null>(null); 
+  // NEW: Track if upcoming data has been modified
+  const [upcomingModified, setUpcomingModified] = useState(false);
+  // Progress Monitoring 
+  const [progressRows, setProgressRows] = useState<Row[]>([]); 
+  const [progressSortKey, setProgressSortKey] = useState<ProgressSortKey>("client_name"); 
+  const [progressSortDir, setProgressSortDir] = useState<SortDir>("asc"); 
+  const [progressPage, setProgressPage] = useState(1); 
+  const [progressTotal, setProgressTotal] = useState(0); 
+  // All Records 
+  const [allRows, setAllRows] = useState<Row[]>([]); 
+  const [allSortKey, setAllSortKey] = useState<SortKey>("created_at"); 
+  const [allSortDir, setAllSortDir] = useState<SortDir>("desc"); 
+  const [allPage, setAllPage] = useState(1); 
+  const [allTotal, setAllTotal] = useState(0); 
+  const [allDrafts, setAllDrafts] = useState<Record<string, string>>({}); 
+  const [allSavingId, setAllSavingId] = useState<number | string | null>(null); 
+  const [allOpenCell, setAllOpenCell] = useState<string | null>(null); 
+  // NEW: Track if all records data has been modified
+  const [allModified, setAllModified] = useState(false);
+  // Top-level stats 
+  const [newClients, setNewClients] = useState(0); 
+  const [bopToday, setBopToday] = useState(0); 
+  const [followupToday, setFollowupToday] = useState(0); 
+  const [completedToday, setCompletedToday] = useState(0); 
+  // Charts 
+  const [chartData, setChartData] = useState<any[]>([]); 
+  const [callData, setCallData] = useState<any[]>([]); 
+  // Range filter for Upcoming 
+  const [startDateRaw, setStartDateRaw] = useState(""); 
+  const [endDateRaw, setEndDateRaw] = useState(""); 
+  const [showResultsActive, setShowResultsActive] = useState(false); 
+  useEffect(() => { 
+    if (!hasAuthCookie()) { 
+      router.replace("/login"); 
+    } else { 
+      loadData(); 
+    } 
+  }, []); 
+  async function loadData() { 
+    setLoading(true); 
+    setError(""); 
+    try { 
+      const statsData = await callRPC<any[]>("get_top_stats"); 
+      if (statsData && statsData.length > 0) { 
+        const s = statsData[0]; 
+        setNewClients(s.new_clients ?? 0); 
+        setBopToday(s.bop_today ?? 0); 
+        setFollowupToday(s.followup_today ?? 0); 
+        setCompletedToday(s.completed_today ?? 0); 
+      } 
+      const cData = await callRPC<any[]>("get_bop_followup_completion_chart"); 
+      if (cData && cData.length > 0) { 
+        const transformed = cData.map((x: any) => ({ 
+          date: x.date_label ?? "", 
+          "BOP Calls": x.bop_count ?? 0, 
+          "Follow-Up Calls": x.followup_count ?? 0, 
+          Completed: x.completed_count ?? 0, 
+        })); 
+        setChartData(transformed); 
+      } 
+      const callDataRaw = await callRPC<any[]>("get_call_status_chart"); 
+      if (callDataRaw && callDataRaw.length > 0) { 
+        const labeled = callDataRaw.map((x: any) => ({ 
+          status: x.status_label ?? "Unknown", 
+          count: x.count ?? 0, 
+        })); 
+        setCallData(labeled); 
+      } 
+      await fetchUpcomingMeetings("", ""); 
+      await fetchProgressMonitoring(); 
+      await fetchAllRecords(); 
+    } catch (err) { 
+      console.error(err); 
+      setError("Error loading data. Please try again."); 
+    } finally { 
+      setLoading(false); 
+    } 
+  } 
+  async function fetchUpcomingMeetings(startDate: string, endDate: string) { 
+    const data = await callRPC<any[]>("get_upcoming_meetings", { 
+      p_start_date: startDate || null, 
+      p_end_date: endDate || null, 
+    }); 
+    if (data) { 
+      setUpcomingRows(data); 
+    } else { 
+      setUpcomingRows([]); 
+    } 
+    // Reset modification tracking when data is refreshed
+    setUpcomingModified(false);
+  } 
+  async function fetchProgressMonitoring() { 
+    const limit = PROGRESS_PAGE_SIZE; 
+    const offset = (progressPage - 1) * limit; 
+    const data = await callRPC<any[]>("get_progress_monitoring", { 
+      p_limit: limit, 
+      p_offset: offset, 
+      p_sort_column: progressSortKey, 
+      p_sort_direction: progressSortDir, 
+    }); 
+    if (data) { 
+      setProgressRows(data); 
+      if (data.length > 0 && data[0].total_count !== undefined) { 
+        setProgressTotal(data[0].total_count); 
+      } 
+    } else { 
+      setProgressRows([]); 
+      setProgressTotal(0); 
+    } 
+  } 
+  async function fetchAllRecords() { 
+    const limit = ALL_PAGE_SIZE; 
+    const offset = (allPage - 1) * limit; 
+    const data = await callRPC<any[]>("get_all_records", { 
+      p_limit: limit, 
+      p_offset: offset, 
+      p_sort_column: allSortKey, 
+      p_sort_direction: allSortDir, 
+    }); 
+    if (data) { 
+      setAllRows(data); 
+      if (data.length > 0 && data[0].total_count !== undefined) { 
+        setAllTotal(data[0].total_count); 
+      } 
+    } else { 
+      setAllRows([]); 
+      setAllTotal(0); 
+    } 
+    // Reset modification tracking when data is refreshed
+    setAllModified(false);
+  } 
+  useEffect(() => { 
+    if (!loading) fetchProgressMonitoring(); 
+  }, [progressPage, progressSortKey, progressSortDir]); 
+  useEffect(() => { 
+    if (!loading) fetchAllRecords(); 
+  }, [allPage, allSortKey, allSortDir]); 
+  async function handleUpdateRow(rowId: string, key: string, value: string) { 
+    const numId = Number(rowId); 
+    if (Number.isNaN(numId)) return; 
+    
+    // Determine which view we're updating and set modified flag
+    if (activeView === "upcoming") {
+      setUpcomingSavingId(numId);
+      setUpcomingModified(true);
+    } else if (activeView === "all") {
+      setAllSavingId(numId);
+      setAllModified(true);
+    }
+    
+    try { 
+      const payload: Record<string, any> = { p_id: numId }; 
+      if (DATE_TIME_KEYS.has(key)) { 
+        if (!value) { 
+          payload[`p_${key.toLowerCase()}`] = null; 
+        } else { 
+          const parsed = new Date(value); 
+          if (!Number.isNaN(parsed.getTime())) { 
+            payload[`p_${key.toLowerCase()}`] = parsed.toISOString(); 
+          } else { 
+            payload[`p_${key.toLowerCase()}`] = null; 
+          } 
+        } 
+      } else if (DATE_ONLY_KEYS.has(key)) { 
+        if (!value) { 
+          payload[`p_${key.toLowerCase()}`] = null; 
+        } else { 
+          const parsed = new Date(value); 
+          if (!Number.isNaN(parsed.getTime())) { 
+            payload[`p_${key.toLowerCase()}`] = format(parsed, "yyyy-MM-dd"); 
+          } else { 
+            payload[`p_${key.toLowerCase()}`] = null; 
+          } 
+        } 
+      } else { 
+        payload[`p_${key.toLowerCase()}`] = value; 
+      } 
+      const result = await callRPC<any>("update_client_field", payload); 
+      if (!result) throw new Error("Update failed"); 
+      if (activeView === "upcoming") { 
+        setUpcomingRows((prev) => 
+          prev.map((r) => (String(r.id) === rowId ? { ...r, [key]: value } : r)) 
+        ); 
+        setUpcomingDrafts((prev) => { 
+          const next = { ...prev }; 
+          delete next[`${rowId}:${key}`]; 
+          return next; 
+        }); 
+      } else if (activeView === "all") { 
+        setAllRows((prev) => 
+          prev.map((r) => (String(r.id) === rowId ? { ...r, [key]: value } : r)) 
+        ); 
+        setAllDrafts((prev) => { 
+          const next = { ...prev }; 
+          delete next[`${rowId}:${key}`]; 
+          return next; 
+        }); 
+      } 
+    } catch (err) { 
+      console.error("Update failed:", err); 
+      alert("Failed to update. Please try again."); 
+    } finally { 
+      if (activeView === "upcoming") {
+        setUpcomingSavingId(null);
+      } else if (activeView === "all") {
+        setAllSavingId(null);
+      }
+    } 
+  } 
+  
+  // NEW: Save all pending changes function
+  async function handleSaveChanges() {
+    if (activeView === "upcoming") {
+      // Save all pending drafts for upcoming view
+      const entries = Object.entries(upcomingDrafts);
+      for (const [cellId, value] of entries) {
+        const [rowId, key] = cellId.split(":");
+        await handleUpdateRow(rowId, key, value);
+      }
+      setUpcomingDrafts({});
+      setUpcomingModified(false);
+    } else if (activeView === "all") {
+      // Save all pending drafts for all records view
+      const entries = Object.entries(allDrafts);
+      for (const [cellId, value] of entries) {
+        const [rowId, key] = cellId.split(":");
+        await handleUpdateRow(rowId, key, value);
+      }
+      setAllDrafts({});
+      setAllModified(false);
+    }
+  }
+  
+  function handleUpcomingSort(key: string) { 
+    if (upcomingSortKey === key) { 
+      setUpcomingSortDir((prev) => (prev === "asc" ? "desc" : "asc")); 
+    } else { 
+      setUpcomingSortKey(key as SortKey); 
+      setUpcomingSortDir("asc"); 
+    } 
+  } 
+  function handleProgressSort(key: string) { 
+    if (progressSortKey === key) { 
+      setProgressSortDir((prev) => (prev === "asc" ? "desc" : "asc")); 
+    } else { 
+      setProgressSortKey(key as ProgressSortKey); 
+      setProgressSortDir("asc"); 
+    } 
+  } 
+  function handleAllSort(key: string) { 
+    if (allSortKey === key) { 
+      setAllSortDir((prev) => (prev === "asc" ? "desc" : "asc")); 
+    } else { 
+      setAllSortKey(key as SortKey); 
+      setAllSortDir("asc"); 
+    } 
+  } 
+  const sortedUpcoming = useMemo(() => { 
+    const arr = [...upcomingRows]; 
+    arr.sort((a, b) => { 
+      const aVal = a[upcomingSortKey]; 
+      const bVal = b[upcomingSortKey]; 
+      let cmp = 0; 
+      if (typeof aVal === "string" && typeof bVal === "string") { 
+        cmp = aVal.localeCompare(bVal); 
+      } else if (typeof aVal === "number" && typeof bVal === "number") { 
+        cmp = aVal - bVal; 
+      } else { 
+        cmp = String(aVal ?? "").localeCompare(String(bVal ?? "")); 
+      } 
+      return upcomingSortDir === "asc" ? cmp : -cmp; 
+    }); 
+    return arr; 
+  }, [upcomingRows, upcomingSortKey, upcomingSortDir]); 
+  const sortedProgress = useMemo(() => { 
+    const arr = [...progressRows]; 
+    arr.sort((a, b) => { 
+      const aVal = a[progressSortKey]; 
+      const bVal = b[progressSortKey]; 
+      let cmp = 0; 
+      if (typeof aVal === "string" && typeof bVal === "string") { 
+        cmp = aVal.localeCompare(bVal); 
+      } else if (typeof aVal === "number" && typeof bVal === "number") { 
+        cmp = aVal - bVal; 
+      } else { 
+        cmp = String(aVal ?? "").localeCompare(String(bVal ?? "")); 
+      } 
+      return progressSortDir === "asc" ? cmp : -cmp; 
+    }); 
+    return arr; 
+  }, [progressRows, progressSortKey, progressSortDir]); 
+  const sortedAll = useMemo(() => { 
+    const arr = [...allRows]; 
+    arr.sort((a, b) => { 
+      const aVal = a[allSortKey]; 
+      const bVal = b[allSortKey]; 
+      let cmp = 0; 
+      if (typeof aVal === "string" && typeof bVal === "string") { 
+        cmp = aVal.localeCompare(bVal); 
+      } else if (typeof aVal === "number" && typeof bVal === "number") { 
+        cmp = aVal - bVal; 
+      } else { 
+        cmp = String(aVal ?? "").localeCompare(String(bVal ?? "")); 
+      } 
+      return allSortDir === "asc" ? cmp : -cmp; 
+    }); 
+    return arr; 
+  }, [allRows, allSortKey, allSortDir]); 
+  const progressPageCount = Math.ceil(progressTotal / PROGRESS_PAGE_SIZE); 
+  const allPageCount = Math.ceil(allTotal / ALL_PAGE_SIZE); 
+  function handleRefreshUpcoming() { 
+    setStartDateRaw(""); 
+    setEndDateRaw(""); 
+    setShowResultsActive(false); 
+    setUpcomingDrafts({});
+    setUpcomingModified(false); // Reset modified flag on refresh
+    fetchUpcomingMeetings("", ""); 
+  } 
+  function handleShowResults() { 
+    setShowResultsActive(true); 
+    fetchUpcomingMeetings(startDateRaw, endDateRaw); 
+  } 
+  function handleLogout() { 
+    clearAuthCookie(); 
+    router.push("/login"); 
+  } 
+  function handleExportUpcoming() { 
+    const wb = XLSX.utils.book_new(); 
+    const wsData = [ 
+      ["Client Name", "Email", "Phone", "Called On", "BOP Date", "BOP Status", "Follow-Up Date", "Follow-Up Status", "Status", "Spouse Name", "Date Of Birth", "Children", "City", "State", "Immigration Status", "Work Details"], 
+      ...sortedUpcoming.map((r) => [ 
+        r.client_name, 
+        r.email, 
+        r.phone, 
+        r.CalledOn, 
+        r.BOP_Date, 
+        r.BOP_Status, 
+        r.Followup_Date, 
+        r.FollowUp_Status, 
+        r.client_status, 
+        r.spouse_name, 
+        r.date_of_birth, 
+        r.children, 
+        r.city, 
+        r.state, 
+        r.immigration_status, 
+        r.work_details, 
+      ]), 
+    ]; 
+    const ws = XLSX.utils.aoa_to_sheet(wsData); 
+    XLSX.utils.book_append_sheet(wb, ws, "Upcoming Meetings"); 
+    XLSX.writeFile(wb, "upcoming_meetings.xlsx"); 
+  } 
+  function handleExportProgress() { 
+    const wb = XLSX.utils.book_new(); 
+    const wsData = [ 
+      ["Client Name", "Last Call On", "No of Calls", "Last/Next BOP Call On", "No of BOP Calls", "Last/Next FollowUp On", "No of FollowUp Calls"], 
+      ...sortedProgress.map((r) => [ 
+        r.client_name, 
+        r.last_call_date, 
+        r.call_attempts, 
+        r.last_bop_date, 
+        r.bop_attempts, 
+        r.last_followup_date, 
+        r.followup_attempts, 
+      ]), 
+    ]; 
+    const ws = XLSX.utils.aoa_to_sheet(wsData); 
+    XLSX.utils.book_append_sheet(wb, ws, "Progress Monitoring"); 
+    XLSX.writeFile(wb, "progress_monitoring.xlsx"); 
+  } 
+  function handleExportAll() { 
+    const wb = XLSX.utils.book_new(); 
+    const wsData = [ 
+      ["ID", "Client Name", "Email", "Phone", "Called On", "BOP Date", "BOP Status", "Follow-Up Date", "Follow-Up Status", "Status", "Created Date", "Spouse Name", "Date Of Birth", "Children", "City", "State", "Immigration Status", "Work Details"], 
+      ...sortedAll.map((r) => [ 
+        r.id, 
+        r.client_name, 
+        r.email, 
+        r.phone, 
+        r.CalledOn, 
+        r.BOP_Date, 
+        r.BOP_Status, 
+        r.Followup_Date, 
+        r.FollowUp_Status, 
+        r.client_status, 
+        r.created_at, 
+        r.spouse_name, 
+        r.date_of_birth, 
+        r.children, 
+        r.city, 
+        r.state, 
+        r.immigration_status, 
+        r.work_details, 
+      ]), 
+    ]; 
+    const ws = XLSX.utils.aoa_to_sheet(wsData); 
+    XLSX.utils.book_append_sheet(wb, ws, "All Records"); 
+    XLSX.writeFile(wb, "all_records.xlsx"); 
+  } 
+  if (loading) { 
+    return ( 
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100"> 
+        <div className="text-center"> 
+          <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div> 
+          <p className="text-lg font-medium text-slate-700">Loading Dashboard...</p> 
+        </div> 
+      </div> 
+    ); 
+  } 
+  if (error) { 
+    return ( 
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100"> 
+        <Card className="max-w-md p-6 text-center"> 
+          <p className="mb-4 text-red-600 font-semibold">{error}</p> 
+          <Button onClick={() => loadData()}>Retry</Button> 
+        </Card> 
+      </div> 
+    ); 
+  } 
+  const upcomingCols = [ 
+    { id: "client_name", key: "client_name", defaultW: 180, sortable: true }, 
+    { id: "email", key: "email", defaultW: 200, sortable: true }, 
+    { id: "phone", key: "phone", defaultW: 140, sortable: true }, 
+    { id: "CalledOn", key: "CalledOn", defaultW: 160, sortable: true }, 
+    { id: "BOP_Date", key: "BOP_Date", defaultW: 160, sortable: true }, 
+    { id: "BOP_Status", key: "BOP_Status", defaultW: 130, sortable: true }, 
+    { id: "Followup_Date", key: "Followup_Date", defaultW: 160, sortable: true }, 
+    { id: "FollowUp_Status", key: "FollowUp_Status", defaultW: 150, sortable: true }, 
+    { id: "status", key: "client_status", defaultW: 140, sortable: true }, 
+    { id: "spouse_name", key: "spouse_name", defaultW: 150 }, 
+    { id: "date_of_birth", key: "date_of_birth", defaultW: 140 }, 
+    { id: "children", key: "children", defaultW: 120 }, 
+    { id: "city", key: "city", defaultW: 120 }, 
+    { id: "state", key: "state", defaultW: 100 }, 
+    { id: "immigration_status", key: "immigration_status", defaultW: 160 }, 
+    { id: "work_details", key: "work_details", defaultW: 200 }, 
+  ]; 
+  const progressCols = [ 
+    { id: "client_name", key: "client_name", defaultW: 180, sortable: true }, 
+    { id: "last_call_date", key: "last_call_date", defaultW: 150, sortable: true }, 
+    { id: "call_attempts", key: "call_attempts", defaultW: 120, sortable: true }, 
+    { id: "last_bop_date", key: "last_bop_date", defaultW: 170, sortable: true }, 
+    { id: "bop_attempts", key: "bop_attempts", defaultW: 130, sortable: true }, 
+    { id: "last_followup_date", key: "last_followup_date", defaultW: 180, sortable: true }, 
+    { id: "followup_attempts", key: "followup_attempts", defaultW: 150, sortable: true }, 
+  ]; 
+  const allCols = [ 
+    { id: "id", key: "id", defaultW: 70, sortable: true }, 
+    { id: "client_name", key: "client_name", defaultW: 180, sortable: true }, 
+    { id: "email", key: "email", defaultW: 200, sortable: true }, 
+    { id: "phone", key: "phone", defaultW: 140, sortable: true }, 
+    { id: "CalledOn", key: "CalledOn", defaultW: 160, sortable: true }, 
+    { id: "BOP_Date", key: "BOP_Date", defaultW: 160, sortable: true }, 
+    { id: "BOP_Status", key: "BOP_Status", defaultW: 130, sortable: true }, 
+    { id: "Followup_Date", key: "Followup_Date", defaultW: 160, sortable: true }, 
+    { id: "FollowUp_Status", key: "FollowUp_Status", defaultW: 150, sortable: true }, 
+    { id: "status", key: "client_status", defaultW: 140, sortable: true }, 
+    { id: "created_at", key: "created_at", defaultW: 130, sortable: true }, 
+    { id: "spouse_name", key: "spouse_name", defaultW: 150 }, 
+    { id: "date_of_birth", key: "date_of_birth", defaultW: 140 }, 
+    { id: "children", key: "children", defaultW: 120 }, 
+    { id: "city", key: "city", defaultW: 120 }, 
+    { id: "state", key: "state", defaultW: 100 }, 
+    { id: "immigration_status", key: "immigration_status", defaultW: 160 }, 
+    { id: "work_details", key: "work_details", defaultW: 200 }, 
+  ]; 
+  return ( 
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 p-4"> 
+      <div className="mx-auto max-w-[1600px]"> 
+        <div className="mb-6 flex items-center justify-between"> 
+          <h1 className="text-3xl font-bold text-slate-800">CAN Dashboard</h1> 
+          <Button variant="secondary" onClick={handleLogout}>Logout</Button> 
+        </div> 
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4"> 
+          <Card className="flex flex-col items-center justify-center p-4"> 
+            <p className="text-sm text-slate-600 mb-1">New Clients</p> 
+            <p className="text-3xl font-bold text-blue-600">{newClients}</p> 
+          </Card> 
+          <Card className="flex flex-col items-center justify-center p-4"> 
+            <p className="text-sm text-slate-600 mb-1">BOP Calls Today</p> 
+            <p className="text-3xl font-bold text-green-600">{bopToday}</p> 
+          </Card> 
+          <Card className="flex flex-col items-center justify-center p-4"> 
+            <p className="text-sm text-slate-600 mb-1">Follow-Up Calls Today</p> 
+            <p className="text-3xl font-bold text-purple-600">{followupToday}</p> 
+          </Card> 
+          <Card className="flex flex-col items-center justify-center p-4"> 
+            <p className="text-sm text-slate-600 mb-1">Completed Today</p> 
+            <p className="text-3xl font-bold text-orange-600">{completedToday}</p> 
+          </Card> 
+        </div> 
+        <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2"> 
+          <Card className="p-4"> 
+            <h2 className="mb-4 text-lg font-semibold text-slate-700">BOP, Follow-Up & Completion (Last 7 Days)</h2> 
+            {chartData.length > 0 ? ( 
+              <ResponsiveContainer width="100%" height={240}> 
+                <BarChart data={chartData}> 
+                  <XAxis dataKey="date" tick={{ fontSize: 12 }} /> 
+                  <YAxis tick={{ fontSize: 12 }} /> 
+                  <Tooltip /> 
+                  <Bar dataKey="BOP Calls" fill="#3b82f6" radius={[4, 4, 0, 0]}> 
+                    <LabelList dataKey="BOP Calls" position="top" style={{ fontSize: 10 }} /> 
+                  </Bar> 
+                  <Bar dataKey="Follow-Up Calls" fill="#a855f7" radius={[4, 4, 0, 0]}> 
+                    <LabelList dataKey="Follow-Up Calls" position="top" style={{ fontSize: 10 }} /> 
+                  </Bar> 
+                  <Bar dataKey="Completed" fill="#f97316" radius={[4, 4, 0, 0]}> 
+                    <LabelList dataKey="Completed" position="top" style={{ fontSize: 10 }} /> 
+                  </Bar> 
+                </BarChart> 
+              </ResponsiveContainer> 
+            ) : ( 
+              <p className="text-sm text-slate-500">No chart data available.</p> 
+            )} 
+          </Card> 
+          <Card className="p-4"> 
+            <h2 className="mb-4 text-lg font-semibold text-slate-700">Call Status Distribution</h2> 
+            {callData.length > 0 ? ( 
+              <ResponsiveContainer width="100%" height={240}> 
+                <BarChart data={callData} layout="vertical"> 
+                  <XAxis type="number" tick={{ fontSize: 12 }} /> 
+                  <YAxis dataKey="status" type="category" tick={{ fontSize: 12 }} width={100} /> 
+                  <Tooltip /> 
+                  <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]}> 
+                    <LabelList dataKey="count" position="right" style={{ fontSize: 10 }} /> 
+                  </Bar> 
+                </BarChart> 
+              </ResponsiveContainer> 
+            ) : ( 
+              <p className="text-sm text-slate-500">No call status data available.</p> 
+            )} 
+          </Card> 
+        </div> 
+        <div className="mb-4 flex items-center gap-4"> 
+          <button onClick={() => setActiveView("upcoming")} className={`px-4 py-2 rounded font-semibold transition-colors ${activeView === "upcoming" ? "bg-blue-600 text-white" : "bg-white text-slate-700 hover:bg-blue-50"}`}>Upcoming Meetings</button> 
+          <button onClick={() => setActiveView("progress")} className={`px-4 py-2 rounded font-semibold transition-colors ${activeView === "progress" ? "bg-blue-600 text-white" : "bg-white text-slate-700 hover:bg-blue-50"}`}>Progress Monitoring</button> 
+          <button onClick={() => setActiveView("all")} className={`px-4 py-2 rounded font-semibold transition-colors ${activeView === "all" ? "bg-blue-600 text-white" : "bg-white text-slate-700 hover:bg-blue-50"}`}>All Records</button> 
+        </div> 
+        {activeView === "upcoming" && ( 
+          <Card className="p-4"> 
+            <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
+              <h2 className="text-xl font-semibold text-slate-700">Upcoming Meetings</h2> 
+              <div className="flex items-center gap-2 flex-wrap"> 
+                <input type="date" className="border border-slate-300 rounded px-2 py-1 text-sm" value={startDateRaw} onChange={(e) => setStartDateRaw(e.target.value)} /> 
+                <span className="text-sm text-slate-600">to</span> 
+                <input type="date" className="border border-slate-300 rounded px-2 py-1 text-sm" value={endDateRaw} onChange={(e) => setEndDateRaw(e.target.value)} /> 
+                <Button variant="secondary" onClick={handleShowResults} className="text-sm"> 
+                  {showResultsActive ? ( 
+                    <span className="flex items-center gap-1"> 
+                      <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span> 
+                      Show Results 
+                    </span> 
+                  ) : ( 
+                    "Show Results" 
+                  )} 
+                </Button> 
+                <Button variant="secondary" onClick={handleRefreshUpcoming} className="text-sm">Refresh</Button> 
+                <Button variant="secondary" onClick={handleExportUpcoming} className="text-sm">Export</Button> 
+              </div> 
+            </div> 
+            {/* NEW: Save button for upcoming meetings */}
+            <div className="mb-4">
+              <Button 
+                onClick={handleSaveChanges} 
+                disabled={!upcomingModified}
+                className="text-sm"
+              >
+                Save Changes
+              </Button>
+            </div>
+            <ResizableTable 
+              rows={sortedUpcoming} 
+              columns={upcomingCols} 
+              stickyLeftCount={3} 
+              drafts={upcomingDrafts} 
+              setDrafts={setUpcomingDrafts} 
+              savingId={upcomingSavingId} 
+              onUpdate={handleUpdateRow} 
+              onSort={handleUpcomingSort} 
+              sortKey={upcomingSortKey} 
+              sortDir={upcomingSortDir} 
+              openCell={upcomingOpenCell} 
+              setOpenCell={setUpcomingOpenCell} 
+            /> 
+          </Card> 
+        )} 
+        {activeView === "progress" && ( 
+          <Card className="p-4"> 
+            <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
+              <h2 className="text-xl font-semibold text-slate-700">Progress Monitoring</h2> 
+              <div className="flex items-center gap-2"> 
+                <Button variant="secondary" onClick={() => fetchProgressMonitoring()} className="text-sm">Refresh</Button> 
+                <Button variant="secondary" onClick={handleExportProgress} className="text-sm">Export</Button> 
+              </div> 
+            </div> 
+            <ResizableTable 
+              rows={sortedProgress} 
+              columns={progressCols} 
+              stickyLeftCount={1} 
+              onSort={handleProgressSort} 
+              sortKey={progressSortKey} 
+              sortDir={progressSortDir} 
+            /> 
+            {progressPageCount > 1 && ( 
+              <div className="mt-4 flex items-center justify-center gap-2"> 
+                <Button variant="secondary" onClick={() => setProgressPage((p) => Math.max(1, p - 1))} disabled={progressPage === 1}>Prev</Button> 
+                <span className="text-sm text-slate-600">Page {progressPage} of {progressPageCount}</span> 
+                <Button variant="secondary" onClick={() => setProgressPage((p) => Math.min(progressPageCount, p + 1))} disabled={progressPage === progressPageCount}>Next</Button> 
+              </div> 
+            )} 
+          </Card> 
+        )} 
+        {activeView === "all" && ( 
+          <Card className="p-4"> 
+            <div className="mb-4 flex items-center justify-between flex-wrap gap-2"> 
+              <h2 className="text-xl font-semibold text-slate-700">All Records</h2> 
+              <div className="flex items-center gap-2"> 
+                <Button variant="secondary" onClick={() => { setAllDrafts({}); setAllModified(false); fetchAllRecords(); }} className="text-sm">Refresh</Button> 
+                <Button variant="secondary" onClick={handleExportAll} className="text-sm">Export</Button> 
+              </div> 
+            </div> 
+            {/* NEW: Save button for all records */}
+            <div className="mb-4">
+              <Button 
+                onClick={handleSaveChanges} 
+                disabled={!allModified}
+                className="text-sm"
+              >
+                Save Changes
+              </Button>
+            </div>
+            <ResizableTable 
+              rows={sortedAll} 
+              columns={allCols} 
+              stickyLeftCount={3} 
+              drafts={allDrafts} 
+              setDrafts={setAllDrafts} 
+              savingId={allSavingId} 
+              onUpdate={handleUpdateRow} 
+              onSort={handleAllSort} 
+              sortKey={allSortKey} 
+              sortDir={allSortDir} 
+              openCell={allOpenCell} 
+              setOpenCell={setAllOpenCell} 
+            /> 
+            {allPageCount > 1 && ( 
+              <div className="mt-4 flex items-center justify-center gap-2"> 
+                <Button variant="secondary" onClick={() => setAllPage((p) => Math.max(1, p - 1))} disabled={allPage === 1}>Prev</Button> 
+                <span className="text-sm text-slate-600">Page {allPage} of {allPageCount}</span> 
+                <Button variant="secondary" onClick={() => setAllPage((p) => Math.min(allPageCount, p + 1))} disabled={allPage === allPageCount}>Next</Button> 
+              </div> 
+            )} 
+          </Card> 
+        )} 
+      </div> 
     </div> 
   ); 
 }
