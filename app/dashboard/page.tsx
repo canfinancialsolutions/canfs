@@ -230,14 +230,14 @@ function ResizableTable({
   stickyLeftCount = 0, 
   extraLeftCols = [], 
   drafts = {}, 
-  setDrafts, 
+  setDrafts = () => {}, 
   savingId = null, 
-  onUpdate, 
+  onUpdate = async () => {}, 
   onSort, 
   sortKey, 
   sortDir, 
   openCell, 
-  setOpenCell, 
+  setOpenCell = () => {}, 
 }: { 
   rows: Row[]; 
   columns: { id: string; key?: string; kind?: string; defaultW?: number; sortable?: boolean }[]; 
