@@ -48,7 +48,7 @@ type SortKey =
   | "client" 
   | "created_at" 
   | "BOP_Date" 
-  | "BOP_Status" 
+  | "BOP_" 
   | "Followup_Date" 
   | "status" 
   | "CalledOn" 
@@ -271,7 +271,7 @@ const IMMIGRATION_STATUS_OPTIONS: string[] = [
   "F-1 OPT", "F-1 STEM OPT", "H-4 EAD", "E-3", "I-485 Pending", "I-485 EAD/AP", "Other Visa Status", 
 ]; 
 const STATUS_OPTIONS: Record<string, string[]> = { 
-  status: ["", "Prospect Client", "New Client",  "Existing Client", "Referral Client", "Initiated", "In-Progress", "On-Hold", "Closed", "Completed"], 
+  status: ["", "Prospect Client", "New Client",  "Existing Client", "Referral Client", "Initiated", "Not-Interested", "In-Progress", "On-Hold", "Closed", "Completed"], 
   followup_status: ["", "Open", "In-Progress", "Follow-Up", "Follow-Up 2", "On Hold", "Completed"], 
   "follow-up_status": ["", "Open", "In-Progress", "Follow-Up", "Follow-Up 2", "On Hold", "Completed"], 
   client_status: ["", "New Client", "Initiated", "Interested", "Not-Interested", "In-Progress", "Closed", "On Hold", "Purchased", "Re-Opened", "Completed"],
