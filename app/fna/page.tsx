@@ -1138,7 +1138,7 @@ export default function Page() {
               <img src="/acn-logo.png" alt="ACN Advancement & Care Network" className="h-10 w-auto" />
               <div>
                 <div className="text-1x2 font-bold text-[#1E5AA8]">{pageTitle}</div>
-                <div className="text-sm font-semibold text-[#0f172a]">Advancing Careers, Caring for Families</div>
+                <div className="text-sm font-semibold text-[#FFD700]">Advancing Careers, Caring for Families</div>
                </div>
             </div>
             <button
