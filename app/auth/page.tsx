@@ -44,13 +44,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
         <div className="flex flex-col items-center mb-6">
               <img src="/acn-logo.png" 
-                alt="ACN Advancement & Care Network" 
+                alt="Advancement & Care Network" 
                 className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full" 
                 style={{ maxHeight: '96px' }}
               />
 <div className="text-center mb-6">
-  <h2 className="text-xl text-blue-700 mb-0 leading-none"><b>ACN Advancement & Care Network</b></h2>
-  <p className="text-sm text-yellow-600 mb-0 mt-1 leading-none"><b>Advancing Careers, Caring for Families</b></p>
+  <h2 className="text-xl text-#205EB0 mb-0 leading-none"><b>Advancement & Care Network</b></h2>
+  <p className="text-sm text-#FFD700 mb-0 mt-1 leading-none"><b>Advancing Careers, Caring for Families</b></p>
   <h1 className="text-2xl font-semibold text-slate-900 mt-2">Admin Login</h1>
 </div>
         </div>
@@ -114,7 +114,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 text-center text-[11px] text-slate-500">
-          ACN Advancement & Care Network &mdash; Advancing Careers, Caring for Families
+          Advancement & Care Network &mdash; Advancing Careers, Caring for Families
         </div>
       </div>
     </div>
