@@ -829,8 +829,8 @@ export default function ProspectPage() {
             <div className="flex items-center gap-3">
               <img src="/acn-logo.png" alt="ACN Advancement & Care Network" className="h-10 w-auto" />
               <div>
-                <div className="text-1x3 font-bold text-blue-800">Prospect List Tracking</div>
-                 <div className="text-sm font-semibold text-yellow-500">Advancing Careers, Caring for Families</div>
+                <div className="text-1x3 font-bold color-#1E5AA8">Prospect List Tracking</div>
+                 <div className="text-sm font-semibold color-#0f172a">Advancing Careers, Caring for Families</div>
               </div>
             </div>
             <button
