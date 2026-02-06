@@ -303,6 +303,7 @@ export default function Dashboard() {
   const [q, setQ] = useState(""); 
   const [records, setRecords] = useState<Row[]>([]); 
   const [total, setTotal] = useState(0); 
+  const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [page, setPage] = useState(0); 
   const [pageJump, setPageJump] = useState("1"); 
   const [loading, setLoading] = useState(true); 
@@ -536,6 +537,22 @@ export default function Dashboard() {
       const { count, error: cErr } = await countQuery; 
       if (cErr) throw cErr; 
       setTotal(count ?? 0); 
+      
+      // Fetch all status counts
+      let allStatusQuery = supabase.from("client_registrations").select("status, client_status");
+      if (search) allStatusQuery = allStatusQuery.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,phone.ilike.%${search}%`);
+      const { data: allStatusData, error: statusErr } = await allStatusQuery;
+      if (statusErr) throw statusErr;
+      
+      const counts: Record<string, number> = {};
+      (allStatusData ?? []).forEach((row: any) => {
+        const status = row.status;
+        const clientStatus = row.client_status;
+        if (status) counts[`status_${status}`] = (counts[`status_${status}`] || 0) + 1;
+        if (clientStatus) counts[`client_status_${clientStatus}`] = (counts[`client_status_${clientStatus}`] || 0) + 1;
+      });
+      setStatusCounts(counts);
+      
       const from = nextPage * ALL_PAGE_SIZE; 
       const to = from + ALL_PAGE_SIZE - 1; 
       let dataQuery = supabase.from("client_registrations").select("*").range(from, to); 
@@ -708,8 +725,8 @@ export default function Dashboard() {
           </div> 
           <div className="flex items-center gap-2"> 
   {(() => {
-    const successfulClientsCount = records.filter(r => r.status === "Successful Client").length;
-    const newClientsCount = records.filter(r => r.status === "New Client").length;
+    const successfulClientsCount = statusCounts["status_Successful Client"] || 0;
+    const newClientsCount = statusCounts["status_New Client"] || 0;
     const latestIssuedDate = records.map(r => r.Issued).filter(Boolean).map(d => new Date(d)).sort((a,b)=>b.getTime()-a.getTime())[0];
      
     const cycleStart = latestIssuedDate ? latestIssuedDate.toLocaleDateString() : "—";
@@ -877,12 +894,12 @@ export default function Dashboard() {
    
 <div className="flex gap-4 mb-2 text-xs font-semibold text-black">
   <div className="px-3 py-1 text-xs font-bold rounded text-center">Client Status:</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#B1FB17] rounded"></span>New Client {records.filter(r => r.client_status === "New Client").length}</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#728FCE] rounded"></span>Interested {records.filter(r => r.client_status === "Interested").length}</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#ADDFFF] rounded"></span>In-Progress {records.filter(r => r.client_status === "In-Progress").length}</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#C9BE62] rounded"></span>On Hold {records.filter(r => r.client_status === "On Hold").length}</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#E6BF83] rounded"></span>Closed {records.filter(r => r.client_status === "Closed").length}</div>
-  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#3CB371] rounded"></span>Policy Issued {records.filter(r => r.client_status === "Policy Issued").length}</div>
+  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#B1FB17] rounded"></span>New Client {records.filter(r => r.client_status === "New Client").length} / {statusCounts["client_status_New Client"] || 0}</div>
+  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#728FCE] rounded"></span>Interested {records.filter(r => r.client_status === "Interested").length} / {statusCounts["client_status_Interested"] || 0}</div>
+  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#ADDFFF] rounded"></span>In-Progress {records.filter(r => r.client_status === "In-Progress").length} / {statusCounts["client_status_In-Progress"] || 0}</div>
+  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#C9BE62] rounded"></span>On Hold {records.filter(r => r.client_status === "On Hold").length} / {statusCounts["client_status_On Hold"] || 0}</div>
+  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#E6BF83] rounded"></span>Closed {records.filter(r => r.client_status === "Closed").length} / {statusCounts["client_status_Closed"] || 0}</div>
+  <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#3CB371] rounded"></span>Policy Issued {records.filter(r => r.client_status === "Policy Issued").length} / {statusCounts["client_status_Policy Issued"] || 0}</div>
 </div>
 
 {recordsVisible && ( 
