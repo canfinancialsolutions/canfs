@@ -709,7 +709,7 @@ export default function Dashboard() {
           </div> 
           <div className="flex items-center gap-2"> 
   {(() => {
-    const successfulClientsCount = records.filter(r => r.status === "Sucessful Client").length;
+    const successfulClientsCount = records.filter(r => r.status === "Successful Client").length;
     const newClientsCount = records.filter(r => r.status === "New Client").length;
     const latestIssuedDate = records.map(r => r.Issued).filter(Boolean).map(d => new Date(d)).sort((a,b)=>b.getTime()-a.getTime())[0];
      
