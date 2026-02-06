@@ -16,8 +16,8 @@ export default function NotFound() {
               <Image src="/can-logo.png" alt="CAN Logo" width={120} height={48} priority className="absolute inset-0 h-12 w-[120px] object-contain" />
             </div>
             <div className="h-12 overflow-hidden flex flex-col justify-center">
-              <div className="text-2xl font-bold text-blue-800 whitespace-nowrap">CAN Financial Solutions Clients Report</div>
-              <div className="text-sm font-semibold text-yellow-500 whitespace-nowrap">Protecting Your Tomorrow</div>
+              <div className="text-2xl font-bold text-blue-800 whitespace-nowrap">ACN Clients Report</div>
+              <div className="text-sm font-semibold text-yellow-500 whitespace-nowrap">Advancing Careers, Caring for Families</div>
             </div>
           </div>
           <div />
