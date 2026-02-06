@@ -354,7 +354,6 @@ export default function Dashboard() {
   useEffect(() => {
     const id = setTimeout(() => {
       loadPage(0);
-      setRecordsVisible(true);
     }, 300);
     return () => clearTimeout(id);
   }, [q]); 
@@ -855,7 +854,7 @@ export default function Dashboard() {
             <div className="flex flex-col md:flex-row md:items-center gap-2 w-full"> 
               <input className="w-80 border border-slate-300 px-3 py-2" placeholder="Search by first name, last name, or phone" value={q} onChange={(e) => setQ(e.target.value)} /> 
               <Button variant="secondary" onClick={() => loadPage(0)}>➡️</Button> 
-              <Button variant="secondary" onClick={() => { clearSaveState(); setQ(""); loadPage(0); setRecordsVisible(true); }}>🔄</Button> 
+              <Button variant="secondary" onClick={() => { clearSaveState(); setQ(""); loadPage(0); }}>🔄</Button> 
               <Button variant="secondary" onClick={saveSelectedRecord} disabled={!saveEnabled || batchSaving || !selectedRecordId}>Save</Button> 
               <Button variant="secondary" onClick={() => setRecordsVisible((v) => !v)}>{recordsVisible ? "Hide🗂️" : "Show🗂️"}</Button> 
             </div> 
