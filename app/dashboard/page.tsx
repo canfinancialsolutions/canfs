@@ -318,7 +318,7 @@ export default function Dashboard() {
   }, [selectedRecordId, pendingEdits]);
  
   const [sortAll, setSortAll] = useState<{ key: SortKey; dir: SortDir }>({ key: "created_at", dir: "desc" }); 
-  const [recordsVisible, setRecordsVisible] = useState(false);  
+  const [recordsVisible, setRecordsVisible] = useState(true);  
 
   const [trendsVisible, setTrendsVisible] = useState(false);
   const [upcomingVisible, setUpcomingVisible] = useState(false);
