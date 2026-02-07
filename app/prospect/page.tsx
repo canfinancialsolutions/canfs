@@ -963,7 +963,7 @@ export default function ProspectPage() {
                         return (
                           <th
                             key={col.key}
-                            className={`px-2 py-2 text-left font-semibold cursor-pointer hover:bg-slate-200 relative select-none ${isSticky ? 'sticky bg-slate-100 z-20' : ''}`}
+                            className={`px-2 py-2 text-left font-semibold cursor-pointer hover:bg-slate-200 relative select-none ${isSticky ? 'sticky bg-slate-100' : ''}`}
                             style={{ 
                               width: `${columnWidths[col.key]}px`, 
                               minWidth: `${columnWidths[col.key]}px`,
@@ -971,7 +971,11 @@ export default function ProspectPage() {
                               borderBottom: '1px solid #cbd5e1',
                               borderLeft: '1px solid #cbd5e1',
                               borderRight: '1px solid #cbd5e1',
-                              ...(isSticky ? { left: `${leftOffset}px`, boxShadow: idx === 2 ? '2px 0 5px -2px rgba(0,0,0,0.1)' : 'none' } : {})
+                              ...(isSticky ? { 
+                                left: `${leftOffset}px`, 
+                                zIndex: 30,
+                                boxShadow: idx === 2 ? '2px 0 5px -2px rgba(0,0,0,0.15)' : 'none'
+                              } : {})
                             }}
                             onClick={() => handleSort(col.key as keyof Prospect)}
                           >
@@ -1039,9 +1043,49 @@ export default function ProspectPage() {
                             className={`${cursorClass} ${bgClass}`}
                             title={titleText}
                           >
-                            <td className={`px-2 py-2 text-xs text-slate-900 font-semibold truncate sticky left-0 z-10 ${solidBg}`} style={{ width: `${columnWidths['first_name']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.first_name}</td>
-                            <td className={`px-2 py-2 text-xs text-slate-700 truncate sticky z-10 ${solidBg}`} style={{ width: `${columnWidths['last_name']}px`, left: `${columnWidths['first_name']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.last_name}</td>
-                            <td className={`px-2 py-2 text-xs text-slate-700 truncate sticky z-10 ${solidBg}`} style={{ width: `${columnWidths['spouse_name']}px`, left: `${columnWidths['first_name'] + columnWidths['last_name']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1', boxShadow: '2px 0 5px -2px rgba(0,0,0,0.1)' }}>{p.spouse_name}</td>
+                            <td 
+                              className={`px-2 py-2 text-xs text-slate-900 font-semibold truncate sticky ${solidBg}`} 
+                              style={{ 
+                                width: `${columnWidths['first_name']}px`, 
+                                left: '0px',
+                                zIndex: 20,
+                                borderTop: '1px solid #cbd5e1', 
+                                borderBottom: '1px solid #cbd5e1', 
+                                borderLeft: '1px solid #cbd5e1', 
+                                borderRight: '1px solid #cbd5e1'
+                              }}
+                            >
+                              {p.first_name}
+                            </td>
+                            <td 
+                              className={`px-2 py-2 text-xs text-slate-700 truncate sticky ${solidBg}`} 
+                              style={{ 
+                                width: `${columnWidths['last_name']}px`, 
+                                left: `${columnWidths['first_name']}px`,
+                                zIndex: 20,
+                                borderTop: '1px solid #cbd5e1', 
+                                borderBottom: '1px solid #cbd5e1', 
+                                borderLeft: '1px solid #cbd5e1', 
+                                borderRight: '1px solid #cbd5e1'
+                              }}
+                            >
+                              {p.last_name}
+                            </td>
+                            <td 
+                              className={`px-2 py-2 text-xs text-slate-700 truncate sticky ${solidBg}`} 
+                              style={{ 
+                                width: `${columnWidths['spouse_name']}px`, 
+                                left: `${columnWidths['first_name'] + columnWidths['last_name']}px`,
+                                zIndex: 20,
+                                borderTop: '1px solid #cbd5e1', 
+                                borderBottom: '1px solid #cbd5e1', 
+                                borderLeft: '1px solid #cbd5e1', 
+                                borderRight: '1px solid #cbd5e1',
+                                boxShadow: '2px 0 5px -2px rgba(0,0,0,0.15)'
+                              }}
+                            >
+                              {p.spouse_name}
+                            </td>
                             <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['relation_type']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.relation_type}</td>
                             <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['phone']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.phone}</td>
                             <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['city']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.city}</td>
