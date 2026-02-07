@@ -953,7 +953,7 @@ export default function ProspectPage() {
             {/* Table with Excel-like features */}
             <div className="rounded-xl border-2 border-slate-400 overflow-hidden">
               <div className="overflow-x-auto relative">
-                <table className="min-w-full w-full text-sm" style={{ tableLayout: 'fixed', borderCollapse: 'collapse', border: '1px solid rgb(203 213 225)' }}>
+                <table className="min-w-full w-full text-sm" style={{ tableLayout: 'fixed', borderCollapse: 'collapse', border: '1px solid #94a3b8' }}>
                   <thead className="bg-slate-100 text-slate-700">
                     <tr>
                       {COLUMNS.map((col, idx) => {
@@ -967,14 +967,14 @@ export default function ProspectPage() {
                             style={{ 
                               width: `${columnWidths[col.key]}px`, 
                               minWidth: `${columnWidths[col.key]}px`,
-                              borderTop: '1px solid #cbd5e1',
-                              borderBottom: '1px solid #cbd5e1',
-                              borderLeft: '1px solid #cbd5e1',
-                              borderRight: '1px solid #cbd5e1',
+                              borderTop: '1px solid #94a3b8',
+                              borderBottom: '1px solid #94a3b8',
+                              borderLeft: '1px solid #94a3b8',
+                              borderRight: idx === 2 ? '2px solid #64748b' : '1px solid #94a3b8',
                               ...(isSticky ? { 
                                 left: `${leftOffset}px`, 
                                 zIndex: 30,
-                                boxShadow: idx === 2 ? '2px 0 5px -2px rgba(0,0,0,0.15)' : 'none'
+                                boxShadow: idx === 2 ? '3px 0 8px -2px rgba(0,0,0,0.2)' : 'none'
                               } : {})
                             }}
                             onClick={() => handleSort(col.key as keyof Prospect)}
@@ -997,13 +997,13 @@ export default function ProspectPage() {
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan={COLUMNS.length} className="px-3 py-6 text-center text-slate-500" style={{ borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>
+                        <td colSpan={COLUMNS.length} className="px-3 py-6 text-center text-slate-500" style={{ borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>
                           Loading...
                         </td>
                       </tr>
                     ) : pageRows.length === 0 ? (
                       <tr>
-                        <td colSpan={COLUMNS.length} className="px-3 py-6 text-center text-slate-500" style={{ borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>
+                        <td colSpan={COLUMNS.length} className="px-3 py-6 text-center text-slate-500" style={{ borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>
                           No prospects found.
                         </td>
                       </tr>
@@ -1049,10 +1049,10 @@ export default function ProspectPage() {
                                 width: `${columnWidths['first_name']}px`, 
                                 left: '0px',
                                 zIndex: 20,
-                                borderTop: '1px solid #cbd5e1', 
-                                borderBottom: '1px solid #cbd5e1', 
-                                borderLeft: '1px solid #cbd5e1', 
-                                borderRight: '1px solid #cbd5e1'
+                                borderTop: '1px solid #94a3b8', 
+                                borderBottom: '1px solid #94a3b8', 
+                                borderLeft: '1px solid #94a3b8', 
+                                borderRight: '1px solid #94a3b8'
                               }}
                             >
                               {p.first_name}
@@ -1063,10 +1063,10 @@ export default function ProspectPage() {
                                 width: `${columnWidths['last_name']}px`, 
                                 left: `${columnWidths['first_name']}px`,
                                 zIndex: 20,
-                                borderTop: '1px solid #cbd5e1', 
-                                borderBottom: '1px solid #cbd5e1', 
-                                borderLeft: '1px solid #cbd5e1', 
-                                borderRight: '1px solid #cbd5e1'
+                                borderTop: '1px solid #94a3b8', 
+                                borderBottom: '1px solid #94a3b8', 
+                                borderLeft: '1px solid #94a3b8', 
+                                borderRight: '1px solid #94a3b8'
                               }}
                             >
                               {p.last_name}
@@ -1077,32 +1077,32 @@ export default function ProspectPage() {
                                 width: `${columnWidths['spouse_name']}px`, 
                                 left: `${columnWidths['first_name'] + columnWidths['last_name']}px`,
                                 zIndex: 20,
-                                borderTop: '1px solid #cbd5e1', 
-                                borderBottom: '1px solid #cbd5e1', 
-                                borderLeft: '1px solid #cbd5e1', 
-                                borderRight: '1px solid #cbd5e1',
-                                boxShadow: '2px 0 5px -2px rgba(0,0,0,0.15)'
+                                borderTop: '1px solid #94a3b8', 
+                                borderBottom: '1px solid #94a3b8', 
+                                borderLeft: '1px solid #94a3b8', 
+                                borderRight: '2px solid #64748b',
+                                boxShadow: '3px 0 8px -2px rgba(0,0,0,0.2)'
                               }}
                             >
                               {p.spouse_name}
                             </td>
-                            <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['relation_type']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.relation_type}</td>
-                            <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['phone']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.phone}</td>
-                            <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['city']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.city}</td>
-                            <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['state']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.state}</td>
-                            <td className={`px-2 py-2 text-xs truncate ${p.top25 === 'Yes' || p.top25 === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['top25']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{yesNoNormalize(p.top25)}</td>
-                            <td className="px-2 py-2 text-xs text-slate-600 truncate" style={{ width: `${columnWidths['immigration']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.immigration}</td>
-                            <td className={`px-2 py-2 text-xs truncate ${p.age25plus === 'Yes' || p.age25plus === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['age25plus']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{yesNoNormalize(p.age25plus)}</td>
-                            <td className={`px-2 py-2 text-xs truncate ${p.married === 'Yes' || p.married === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['married']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{yesNoNormalize(p.married)}</td>
-                            <td className={`px-2 py-2 text-xs truncate ${p.children === 'Yes' || p.children === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['children']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{yesNoNormalize(p.children)}</td>
-                            <td className={`px-2 py-2 text-xs truncate ${p.homeowner === 'Yes' || p.homeowner === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['homeowner']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{yesNoNormalize(p.homeowner)}</td>
-                            <td className={`px-2 py-2 text-xs truncate ${p.good_career === 'Yes' || p.good_career === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['good_career']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{yesNoNormalize(p.good_career)}</td>
-                            <td className={`px-2 py-2 text-xs truncate ${p.income_60k === 'Yes' || p.income_60k === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['income_60k']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{yesNoNormalize(p.income_60k)}</td>
-                            <td className={`px-2 py-2 text-xs truncate ${p.dissatisfied === 'Yes' || p.dissatisfied === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['dissatisfied']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{yesNoNormalize(p.dissatisfied)}</td>
-                            <td className={`px-2 py-2 text-xs truncate ${p.ambitious === 'Yes' || p.ambitious === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['ambitious']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{yesNoNormalize(p.ambitious)}</td>
-                            <td className="px-2 py-2 text-xs text-slate-600 truncate" style={{ width: `${columnWidths['contact_date']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.contact_date}</td>
-                            <td className="px-2 py-2 text-xs text-slate-900 font-medium truncate" style={{ width: `${columnWidths['result']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.result}</td>
-                            <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['next_steps']}px`, borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{p.next_steps}</td>
+                            <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['relation_type']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{p.relation_type}</td>
+                            <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['phone']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{p.phone}</td>
+                            <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['city']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{p.city}</td>
+                            <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['state']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{p.state}</td>
+                            <td className={`px-2 py-2 text-xs truncate ${p.top25 === 'Yes' || p.top25 === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['top25']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{yesNoNormalize(p.top25)}</td>
+                            <td className="px-2 py-2 text-xs text-slate-600 truncate" style={{ width: `${columnWidths['immigration']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{p.immigration}</td>
+                            <td className={`px-2 py-2 text-xs truncate ${p.age25plus === 'Yes' || p.age25plus === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['age25plus']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{yesNoNormalize(p.age25plus)}</td>
+                            <td className={`px-2 py-2 text-xs truncate ${p.married === 'Yes' || p.married === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['married']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{yesNoNormalize(p.married)}</td>
+                            <td className={`px-2 py-2 text-xs truncate ${p.children === 'Yes' || p.children === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['children']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{yesNoNormalize(p.children)}</td>
+                            <td className={`px-2 py-2 text-xs truncate ${p.homeowner === 'Yes' || p.homeowner === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['homeowner']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{yesNoNormalize(p.homeowner)}</td>
+                            <td className={`px-2 py-2 text-xs truncate ${p.good_career === 'Yes' || p.good_career === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['good_career']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{yesNoNormalize(p.good_career)}</td>
+                            <td className={`px-2 py-2 text-xs truncate ${p.income_60k === 'Yes' || p.income_60k === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['income_60k']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{yesNoNormalize(p.income_60k)}</td>
+                            <td className={`px-2 py-2 text-xs truncate ${p.dissatisfied === 'Yes' || p.dissatisfied === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['dissatisfied']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{yesNoNormalize(p.dissatisfied)}</td>
+                            <td className={`px-2 py-2 text-xs truncate ${p.ambitious === 'Yes' || p.ambitious === 'Y' ? 'text-emerald-700 font-semibold' : 'text-slate-700'}`} style={{ width: `${columnWidths['ambitious']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{yesNoNormalize(p.ambitious)}</td>
+                            <td className="px-2 py-2 text-xs text-slate-600 truncate" style={{ width: `${columnWidths['contact_date']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{p.contact_date}</td>
+                            <td className="px-2 py-2 text-xs text-slate-900 font-medium truncate" style={{ width: `${columnWidths['result']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{p.result}</td>
+                            <td className="px-2 py-2 text-xs text-slate-700 truncate" style={{ width: `${columnWidths['next_steps']}px`, borderTop: '1px solid #94a3b8', borderBottom: '1px solid #94a3b8', borderLeft: '1px solid #94a3b8', borderRight: '1px solid #94a3b8' }}>{p.next_steps}</td>
                           </tr>
                         );
                       })
