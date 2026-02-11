@@ -951,19 +951,25 @@ function ProgressSummaryTable({ rows, sortState, onSortChange }: { rows: Row[]; 
   const sortIcon = (k?: ProgressSortKey) => { if (!k) return null; if (sortState.key !== k) return <span className="ml-1 text-black">↕</span>; return <span className="ml-1 text-black">{sortState.dir === "asc" ? "↑" : "↓"}</span>; }; 
   const minWidth = cols.reduce((sum, c) => sum + getW(c.id, c.defaultW), 0); 
   
-  // Format date as dd/mm/yyyy, HH:MM:SS
+  // Format date as mm/dd/yyyy hh:mm PM/AM (matching Upcoming Meetings format)
   const fmtDate = (v: any) => { 
     if (!v) return "—"; 
     const d = new Date(v); 
     const t = d.getTime(); 
     if (!Number.isFinite(t)) return "—"; 
-    const day = String(d.getDate()).padStart(2, '0');
+    
     const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
     const year = d.getFullYear();
-    const hours = String(d.getHours()).padStart(2, '0');
+    
+    let hours = d.getHours();
     const minutes = String(d.getMinutes()).padStart(2, '0');
-    const seconds = String(d.getSeconds()).padStart(2, '0');
-    return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`; 
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const hoursStr = String(hours).padStart(2, '0');
+    
+    return `${month}/${day}/${year} ${hoursStr}:${minutes} ${ampm}`; 
   }; 
   
   // Check if date is in current month
