@@ -154,18 +154,22 @@ function clientName(r: Row) {
   return `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim(); 
 } 
 function toLocalInput(value: any) { 
-  if (!value) return ""; 
+  if (!value || value === null || value === undefined || String(value).trim() === '') return ""; 
   const d = new Date(value); 
-  if (Number.isNaN(d.getTime())) return ""; 
+  if (Number.isNaN(d.getTime()) || d.getTime() < 0) return ""; 
   const pad = (n: number) => String(n).padStart(2, "0"); 
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad( 
     d.getHours() 
   )}:${pad(d.getMinutes())}`; 
 } 
 function toLocalDateInput(value: any) { 
-  if (!value) return ""; 
+  if (!value || value === null || value === undefined || String(value).trim() === '') return ""; 
   const d = new Date(value); 
-  if (Number.isNaN(d.getTime())) return ""; 
+  const timestamp = d.getTime();
+  // Reject invalid dates, negative timestamps, and dates from 1969-1970 (likely epoch/default values)
+  if (Number.isNaN(timestamp) || timestamp < 0) return "";
+  const year = d.getFullYear();
+  if (year === 1969 || year === 1970) return ""; // Reject epoch dates
   const pad = (n: number) => String(n).padStart(2, "0"); 
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; 
 } 
@@ -1227,7 +1231,15 @@ function ExcelTableEditable({
                   ); 
                 } 
                 if (nonEditableKeys.has(k)) { 
-                  const displayVal = DATE_ONLY_KEYS.has(k) ? (() => { const d = new Date(r[k]); return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString(); })() : String(getCellValueForInput(r, k)) || "—"; 
+                  const displayVal = DATE_ONLY_KEYS.has(k) ? (() => { 
+                    if (!r[k] || r[k] === null || r[k] === undefined || String(r[k]).trim() === '') return "—";
+                    const d = new Date(r[k]); 
+                    const timestamp = d.getTime();
+                    if (Number.isNaN(timestamp) || timestamp < 0) return "—";
+                    const year = d.getFullYear();
+                    if (year === 1969 || year === 1970) return "—"; // Reject epoch dates
+                    return d.toLocaleDateString(); 
+                  })() : String(getCellValueForInput(r, k)) || "—"; 
                   return (<td key={c.id} className={`border border-slate-300 px-2 py-2 whitespace-normal break-words ${shouldHighlight(k, r) ? "bg-yellow-200" : ""}`} style={style}>{displayVal}</td>); 
                 } 
                 if (WRAP_KEYS.has(k)) { 
