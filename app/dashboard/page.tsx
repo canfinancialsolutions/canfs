@@ -721,6 +721,14 @@ export default function Dashboard() {
     setUpcomingVisible(target); 
     setProgressVisible(target); 
     setRecordsVisible(target); 
+    
+    // Fetch data when showing cards
+    if (target) {
+      fetchTrends();
+      fetchUpcoming();
+      fetchProgressSummary();
+      // Records are already loaded in loadPage
+    }
   }; 
   const hideZeroFormatter = (val: any) => { const n = Number(val); return Number.isFinite(n) && n === 0 ? "" : val; }; 
   return ( 
