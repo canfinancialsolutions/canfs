@@ -1135,10 +1135,10 @@ export default function Page() {
         <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <img src="/anunathan-logo.png" alt="AnuNathan Financial Group" className="h-10 w-auto" />
+              <img src="/acn-logo.png" alt="ACN Advancement & Care Network" className="h-10 w-auto" />
               <div>
                 <div className="text-1x2 font-bold text-[#1E5AA8]">{pageTitle}</div>
-                <div className="text-sm font-semibold text-[#C9A227]">Build your career. Protect their future</div>
+                <div className="text-sm font-semibold text-[#FFD700]">Advancing Careers, Caring for Families</div>
                </div>
             </div>
             <button
