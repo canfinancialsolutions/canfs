@@ -739,7 +739,7 @@ export default function Dashboard() {
             <img src="/anunathan-logo.png" className="h-12 w-auto" alt="CAN Logo" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} /> 
             <div> 
                <div className="text-1x2 font-bold" style={{ color: "#1E5AA8" }}>Dashboard - Clients Report</div>
-               <div className="text-sm font-semibold" style={{ color: "#FFD700" }}>Build your career. Protect their future</div>
+               <div className="text-sm font-semibold" style={{ color: "#C9A227" }}>Build your career. Protect their future</div>
             </div> 
           </div> 
           <div className="flex items-center gap-2"> 
