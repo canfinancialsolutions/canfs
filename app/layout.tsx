@@ -2,8 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ACN Reports",
-  description: "ACN Advancement & Care Network",
+  title: "AnuNathan Reports",
+  description: "AnuNathan Financial Group",
 };
 
 export default function RootLayout({
