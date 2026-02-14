@@ -17,7 +17,7 @@ export default function NotFound() {
             </div>
             <div className="h-12 overflow-hidden flex flex-col justify-center">
               <div className="text-2xl font-bold text-blue-800 whitespace-nowrap">Clients Report</div>
-              <div className="text-sm font-semibold text-yellow-500 whitespace-nowrap">Advancing Careers, Caring for Families</div>
+              <div className="text-sm font-semibold text-yellow-500 whitespace-nowrap">Build your career. Protect their future</div>
             </div>
           </div>
           <div />
