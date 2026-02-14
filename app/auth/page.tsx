@@ -48,11 +48,6 @@ export default function LoginPage() {
                 className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full" 
                 style={{ maxHeight: '96px' }}
               />
-<div className="text-center mb-6">
-  <h2 className="text-xl text-[#1E5AA8] mb-0 leading-none"><b>AnuNathan Financial Group</b></h2>
-  <p className="text-sm text-[#808000] mb-0 mt-1 leading-none"><b>Building careers, protecting families</b></p>
-  <h1 className="text-2xl font-semibold text-slate-900 mt-2">Admin Login</h1>
-</div>
         </div>
 
         {error && (
