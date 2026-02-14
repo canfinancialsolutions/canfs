@@ -740,7 +740,7 @@ export default function Dashboard() {
               <img src="/anunathan-logo.png" className="h-16 w-auto" alt="Logo" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")} /> 
               <div> 
                 <div className="text-lg text-blue-700 whitespace-nowrap">Dashboard - Clients Report</div>
-                <div className="text-sm font-bold" style={{ color: "#808000" }}>Building careers, protecting families</div>
+                <div className="text-sm font-bold whitespace-nowrap" style={{ color: "#808000" }}>Building careers, protecting families</div>
               </div> 
             </div> 
             
@@ -759,23 +759,23 @@ export default function Dashboard() {
      
     return (
       <>
-        <div className="px-3 py-2 bg-gray-200 text-xs rounded text-center h-10 flex flex-col justify-center">
-          <div>Successful Client👍 {successfulClientsCount}</div>
+        <div className="px-2 py-2 bg-gray-200 text-xs rounded text-center whitespace-nowrap">
+          Successful Client👍 {successfulClientsCount}
         </div>
-        <div className="px-3 py-2 bg-gray-200 text-xs rounded text-center h-10 flex flex-col justify-center">
-          <div>New Clients✏️ {newClientsCount}</div>
+        <div className="px-2 py-2 bg-gray-200 text-xs rounded text-center whitespace-nowrap">
+          New Clients✏️ {newClientsCount}
         </div>
-        <div className="px-3 py-2 bg-gray-200 text-xs rounded text-center h-10 flex flex-col justify-center">
-          <div>Cycle Start on↪️ {cycleStart}</div>
+        <div className="px-2 py-2 bg-gray-200 text-xs rounded text-center whitespace-nowrap">
+          Cycle Start on↪️ {cycleStart}
         </div>
-        <div className="px-3 py-2 bg-gray-200 text-xs rounded text-center h-10 flex flex-col justify-center">
-          <div>Cycle End on↩️ {cycleEnd}</div>
+        <div className="px-2 py-2 bg-gray-200 text-xs rounded text-center whitespace-nowrap">
+          Cycle End on↩️ {cycleEnd}
         </div>
-        <div className="px-3 py-2 bg-gray-200 text-xs rounded text-center h-10 flex flex-col justify-center">
-          <div>Cycle Days🔄 {cycleDays}</div>
+        <div className="px-2 py-2 bg-gray-200 text-xs rounded text-center whitespace-nowrap">
+          Cycle Days🔄 {cycleDays}
         </div>
-        <div className="px-3 py-2 bg-gray-200 text-xs rounded text-center h-10 flex flex-col justify-center">
-          <div>Today Meetings📣 {meetingTodayCount}</div>
+        <div className="px-2 py-2 bg-gray-200 text-xs rounded text-center whitespace-nowrap">
+          Today Meetings📣 {meetingTodayCount}
         </div>
       </>
     );
