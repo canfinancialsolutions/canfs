@@ -111,7 +111,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 text-center text-[11px] text-slate-500">
-          AnuNathan Financial Group &mdash; Building careers, protecting families
+          AnuNathan Financial Group &mdash; Build your career. Protect their future
         </div>
       </div>
     </div>
