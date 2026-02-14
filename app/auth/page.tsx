@@ -44,20 +44,12 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
 
         <div className="flex flex-col items-center gap-1 mb-4">
-  <img 
-    src={logo} 
-    alt="AnuNathan FS" 
-    className="h-16 md:h-20 lg:h-24 w-auto object-contain drop-shadow-md" 
-    style={{ 
-      maxWidth: '90%',
-      maxHeight: '120px'
-    }}
-  />
-
+   <img src="/anunathan-logo.png" 
+                alt="AnuNathan Financial Group" 
+                className="h-16 md:h-20 lg:h-24 w-auto mx-auto mb-3 object-contain max-w-full" 
+                style={{ maxHeight: '96px' }}
+              />
 </div>
-
-        
-      
 <div className="text-center mb-6">
   <h1 className="text-2xl font-semibold text-slate-900 mt-2">Admin Login</h1>
 </div>
