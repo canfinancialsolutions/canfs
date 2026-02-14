@@ -49,7 +49,9 @@ export default function LoginPage() {
                 style={{ maxHeight: '96px' }}
               />
         </div>
-
+<div className="text-center mb-6">
+  <h1 className="text-2xl font-semibold text-slate-900 mt-2">Admin Login</h1>
+</div>
         {error && (
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
             {error}
