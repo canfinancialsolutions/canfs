@@ -161,12 +161,16 @@ function clientName(r: Row) {
 } 
 function toLocalInput(value: any) { 
   if (!value || value === null || value === undefined || String(value).trim() === '') return ""; 
-  const d = new Date(value); 
-  if (Number.isNaN(d.getTime()) || d.getTime() < 0) return ""; 
-  const pad = (n: number) => String(n).padStart(2, "0"); 
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad( 
-    d.getHours() 
-  )}:${pad(d.getMinutes())}`; 
+  
+  // Value from database is in format: 2026-01-23T19:01:00.000Z
+  // We want to display it as: 2026-01-23T19:01 (without timezone conversion)
+  // This preserves the exact time that was entered
+  const str = String(value);
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!match) return "";
+  
+  const [, year, month, day, hour, minute] = match;
+  return `${year}-${month}-${day}T${hour}:${minute}`;
 } 
 function toLocalDateInput(value: any) { 
   if (!value || value === null || value === undefined || String(value).trim() === '') return ""; 
@@ -182,18 +186,22 @@ function toLocalDateInput(value: any) {
 function fromLocalInput(value: string) { 
   if (!value?.trim()) return null;
   
-  // datetime-local format should be: YYYY-MM-DDTHH:MM
-  // Example: 2026-02-21T19:00
-  const d = new Date(value); 
-  if (Number.isNaN(d.getTime())) {
-    console.error('Invalid datetime-local value:', value);
+  // datetime-local format: YYYY-MM-DDTHH:MM
+  // We want to store this EXACT time without timezone conversion
+  // Parse manually to avoid browser timezone interpretation
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+  if (!match) {
+    console.error('Invalid datetime-local format:', value);
     return null;
   }
   
-  // Convert to ISO string (UTC)
-  const isoString = d.toISOString();
+  const [, year, month, day, hour, minute] = match;
+  
+  // Create ISO string directly without timezone conversion
+  // This treats the input as if it's already in UTC
+  const isoString = `${year}-${month}-${day}T${hour}:${minute}:00.000Z`;
   console.log('fromLocalInput:', value, '→', isoString);
-  return isoString; 
+  return isoString;
 } 
 function fromLocalDate(value: string) { 
   if (!value?.trim()) return null; 
