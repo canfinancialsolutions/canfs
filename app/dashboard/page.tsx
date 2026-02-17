@@ -774,16 +774,18 @@ export default function Dashboard() {
   const progressPageSafe = Math.min(progressTotalPages - 1, Math.max(0, progressPage)); 
   const progressSlice = progressFilteredSorted.slice(progressPageSafe * PROGRESS_PAGE_SIZE, progressPageSafe * PROGRESS_PAGE_SIZE + PROGRESS_PAGE_SIZE); 
   
-  // Debug logging
-  if (progressFilteredSorted.length > 0) {
-    console.log('Progress Pagination:', {
-      totalRecords: progressFilteredSorted.length,
-      pageSize: PROGRESS_PAGE_SIZE,
-      totalPages: progressTotalPages,
-      currentPage: progressPageSafe + 1,
-      sliceSize: progressSlice.length
-    });
-  } 
+  // Debug logging in useEffect
+  useEffect(() => {
+    if (progressFilteredSorted.length > 0) {
+      console.log('Progress Pagination:', {
+        totalRecords: progressFilteredSorted.length,
+        pageSize: PROGRESS_PAGE_SIZE,
+        totalPages: progressTotalPages,
+        currentPage: progressPageSafe + 1,
+        sliceSize: progressSlice.length
+      });
+    }
+  }, [progressFilteredSorted.length, progressTotalPages, progressPageSafe, progressSlice.length]);
   
   // Pagination for Upcoming Meetings
   const upcomingTotalPages = Math.max(1, Math.ceil(upcoming.length / UPCOMING_PAGE_SIZE));
@@ -807,6 +809,25 @@ export default function Dashboard() {
     }
   }; 
   const hideZeroFormatter = (val: any) => { const n = Number(val); return Number.isFinite(n) && n === 0 ? "" : val; }; 
+  
+  // Apply column filters to Clients List records
+  const filteredRecords = useMemo(() => {
+    if (Object.keys(recordsColumnFilters).length === 0) return records;
+    
+    return records.filter(record => {
+      // Check each column filter
+      for (const [columnKey, selectedValues] of Object.entries(recordsColumnFilters)) {
+        if (selectedValues.size === 0) continue; // No filter for this column
+        
+        const recordValue = String(record[columnKey] ?? '');
+        if (!selectedValues.has(recordValue)) {
+          return false; // Record doesn't match this column's filter
+        }
+      }
+      return true; // Record passes all filters
+    });
+  }, [records, recordsColumnFilters]);
+  
   return ( 
     <div className="min-h-screen"> 
       <div className="max-w-[1600px] mx-auto p-4 space-y-4"> 
@@ -1083,24 +1104,6 @@ export default function Dashboard() {
   <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#E6BF83] rounded"></span>Closed {records.filter(r => r.client_status === "Closed").length} / {statusCounts["client_status_Closed"] || 0}</div>
   <div className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-[#3CB371] rounded"></span>Policy Issued {records.filter(r => r.client_status === "Policy Issued").length} / {statusCounts["client_status_Policy Issued"] || 0}</div>
 </div>
-
-  // Apply column filters to Clients List records
-  const filteredRecords = useMemo(() => {
-    if (Object.keys(recordsColumnFilters).length === 0) return records;
-    
-    return records.filter(record => {
-      // Check each column filter
-      for (const [columnKey, selectedValues] of Object.entries(recordsColumnFilters)) {
-        if (selectedValues.size === 0) continue; // No filter for this column
-        
-        const recordValue = String(record[columnKey] ?? '');
-        if (!selectedValues.has(recordValue)) {
-          return false; // Record doesn't match this column's filter
-        }
-      }
-      return true; // Record passes all filters
-    });
-  }, [records, recordsColumnFilters]);
 
 {recordsVisible && ( 
             <> 
