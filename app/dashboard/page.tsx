@@ -693,16 +693,19 @@ export default function Dashboard() {
       if (error) throw error;
 
       // Fetch the saved record to get exact database values
-      const { data: savedRecord } = await supabase
+      const { data: savedRecord, error: fetchError } = await supabase
         .from('client_registrations')
         .select('*')
         .eq('id', selectedRecordId)
         .single();
+      
+      // Use savedRecord if available, otherwise fall back to payload
+      const updatedData = savedRecord || payload;
 
       const patch = (prev: Row[]) =>
         prev.map((r) =>
           String(r.id) === String(selectedRecordId) 
-            ? { ...r, ...(savedRecord || payload) } 
+            ? { ...r, ...updatedData } 
             : r
         );
       setRecords(patch);
