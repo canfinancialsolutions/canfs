@@ -1364,20 +1364,20 @@ function ExcelTableEditable({
               const columnKey = c.key as string || c.id;
               const hasFilter = columnFilters && onColumnFilterChange;
               const activeFilter = columnFilters?.[columnKey];
-              const isFiltered = activeFilter && activeFilter.size > 0;
+              const isFiltered = !!(activeFilter && activeFilter.size > 0);
               
-              // Get unique values for this column
-              const uniqueValues = useMemo(() => {
+              // Compute unique values inline (no hook - just a regular computation)
+              const uniqueValues: string[] = (() => {
                 if (!hasFilter) return [];
                 const values = new Set<string>();
-                sourceRows.forEach(row => {
+                (sourceRows || []).forEach((row: any) => {
                   const val = row[columnKey];
-                  if (val !== null && val !== undefined && val !== '') {
+                  if (val !== null && val !== undefined && String(val).trim() !== '') {
                     values.add(String(val));
                   }
                 });
-                return Array.from(values).sort().slice(0, 100); // Limit to 100 values
-              }, [sourceRows, columnKey, hasFilter]);
+                return Array.from(values).sort().slice(0, 100);
+              })();
               
               return ( 
                 <th key={c.id} className="border border-slate-500 px-2 py-2 whitespace-nowrap relative" style={style}> 
@@ -1413,7 +1413,7 @@ function ExcelTableEditable({
                             <div className="p-2 border-b border-slate-200 sticky top-0 bg-white flex justify-between items-center">
                               <button
                                 onClick={() => {
-                                  onColumnFilterChange?.(columnKey, new Set());
+                                  onColumnFilterChange?.(columnKey, new Set<string>());
                                   setOpenFilterKey(null);
                                 }}
                                 className="text-xs text-blue-600 hover:underline"
@@ -1429,7 +1429,7 @@ function ExcelTableEditable({
                             </div>
                             <div className="p-2">
                               {uniqueValues.map(value => {
-                                const isChecked = !isFiltered || activeFilter.has(value);
+                                const isChecked = !isFiltered || !!(activeFilter && activeFilter.has(value));
                                 return (
                                   <label key={value} className="flex items-center gap-2 p-1 hover:bg-slate-50 cursor-pointer text-sm">
                                     <input
